@@ -33,6 +33,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'io.reactivex.rxjava2:rxjava:2.1.2'
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
-//    compile(name: 'heysharevideo-debug', ext: 'aar')
-    compile project(path: ':heysharevideo')
+    compile(name: 'heysharevideo-debug', ext: 'aar')
+//    compile project(path: ':heysharevideo')
 }

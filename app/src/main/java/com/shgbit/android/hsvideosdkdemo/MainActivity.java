@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void connectState(boolean b) {
-                HSVideoSDK.getInstance().startMeeting("910067215562", "603918");
+                HSVideoSDK.getInstance().startMeeting("910069414403", "603918");
             }
 
             @Override

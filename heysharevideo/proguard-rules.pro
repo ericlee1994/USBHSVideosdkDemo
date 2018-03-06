@@ -22,6 +22,7 @@
 
 #保留代码行号，方便异常信息的追踪
 -keepattributes SourceFile,LineNumberTable
+#-renamesourcefileattribute SourceFile
 
 -keep enum com.ainemo.sdk.NemoSDKListener** {
     **[] $VALUES;
@@ -52,17 +53,18 @@
 -keep class com.ainemo.sdk.module.rest.**{*;}
 -keep class com.ainemo.sdk.NemoSDKErrorCode{*;}
 
+-keep class com.ainemo.sdk.otf.** {*;}
+-keep class com.ainemo.a.**{*;}
+-keep class com.ainemo.sdk.module.**{*;}
+-keep class android.http.b{*;}
+-keep class vulture.module.call.**{*;}
+-keep class android.log.**{*;}
+
 -dontwarn com.ainemo.a.**
 -dontwarn com.ainemo.sdk.module.**
 -dontwarn android.http.b
 -dontwarn com.ainemo.sdk.otf.**
 -dontwarn vulture.module.call.**
-
-#-keep class org.joda.time.**{*;}
-#-dontwarn org.joda.time.**
-
-#-libraryjars libs/joda-time-2.9.9.jar
-
 
 #使用GSON、fastjson等框架时，所写的JSON对象类不混淆，否则无法将JSON解析成对应的对象
 -keepclassmembers class * {
@@ -74,6 +76,7 @@
 -keep class com.shgbit.android.heysharevideo.json.**{*;}
 -keep class com.shgbit.android.heysharevideo.addressaar.AddressCallBack{*;}
 -keep class com.shgbit.android.heysharevideo.callback.HSSDKListener{*;}
+-keep class com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager{*;}
 
 #---------------------------------默认保留区---------------------------------
 -keep public class * extends android.app.Activity
@@ -92,10 +95,6 @@
 }
 -keepclassmembers class * extends android.app.Activity{
     public void *(android.view.View);
-}
--keepclassmembers enum * {
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
 }
 -keep public class * extends android.view.View{
     *** get*();
