@@ -7,6 +7,6 @@ package com.shgbit.android.heysharevideo.callback;
 
 public interface IVideoRecordCallBack {
     void initRecord(boolean isShow, String status, String meetingId);
-    void startRecord(String result, String error);
-    void endRecord(String result, String error);
+    void startRecord(boolean result, String error);
+    void endRecord(boolean result, String error);
 }

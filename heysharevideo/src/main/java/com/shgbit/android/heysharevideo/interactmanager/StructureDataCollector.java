@@ -334,17 +334,21 @@ public class StructureDataCollector {
 			for (int i = 0; i < rootOrganization.getUserOrganizations().size(); i++) {
 				rootOrganization.getUserOrganizations().get(i).setStatus("offline");
 				for (OnlineUser ou : onlineUsers) {
+//					if (ou.getUserName().equals(rootOrganization.getUserOrganizations().get(i).getUserName()) == true) {
+//						rootOrganization.getUserOrganizations().get(i).setStatus(ou.getStatus());
+//						if(ou.getMobileStateSessionType() != null){
+//							rootOrganization.getUserOrganizations().get(i).setMobileStateSessionType(ou.getMobileStateSessionType());
+//						}
+//						if(ou.getPCStateSessionType() != null){
+//							rootOrganization.getUserOrganizations().get(i).setPCStateSessionType(ou.getPCStateSessionType());
+//						}
+//						if(ou.getContentOnlyStateSessionType() != null){
+//							rootOrganization.getUserOrganizations().get(i).setContentOnlyStateSessionType(ou.getContentOnlyStateSessionType());
+//						}
+//					}
+
 					if (ou.getUserName().equals(rootOrganization.getUserOrganizations().get(i).getUserName()) == true) {
 						rootOrganization.getUserOrganizations().get(i).setStatus(ou.getStatus());
-						if(ou.getMobileStateSessionType() != null){
-							rootOrganization.getUserOrganizations().get(i).setMobileStateSessionType(ou.getMobileStateSessionType());
-						}
-						if(ou.getPCStateSessionType() != null){
-							rootOrganization.getUserOrganizations().get(i).setPCStateSessionType(ou.getPCStateSessionType());
-						}
-						if(ou.getContentOnlyStateSessionType() != null){
-							rootOrganization.getUserOrganizations().get(i).setContentOnlyStateSessionType(ou.getContentOnlyStateSessionType());
-						}
 					}
 				}
 			}

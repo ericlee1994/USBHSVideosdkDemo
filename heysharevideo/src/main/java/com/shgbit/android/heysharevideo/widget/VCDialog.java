@@ -155,7 +155,7 @@ public class VCDialog extends Dialog{
 		mImgInviter = (ImageView) findViewById(R.id.img_inviter_dialog);
 		mTxtInviter1 = (TextView) findViewById(R.id.txt_meetinginviter1_dialog);
 		mTxtInviter2 = (TextView) findViewById(R.id.txt_meetinginviter2_dialog);
-		mTxtOk = (TextView) findViewById(R.id.txt_ok_dialog);
+		mTxtOk = (TextView) findViewById(R.id.txt_end_ok_dialog);
 		mTxtCancle = (TextView) findViewById(R.id.txt_cancle_dialog);
 		mLlytBg = (LinearLayout) findViewById(R.id.llyt_bg_dialog);
 		mLlytImg = (LinearLayout) findViewById(R.id.llyt_img_dialog);
@@ -242,7 +242,7 @@ public class VCDialog extends Dialog{
 		@Override
 		public void onClick(View arg0) {
 			int id = arg0.getId();
-			if (id == R.id.txt_ok_dialog) {
+			if (id == R.id.txt_end_ok_dialog) {
 				dismiss();
 				if (mCallback != null) {
 					mCallback.onOk(mType, mContent);

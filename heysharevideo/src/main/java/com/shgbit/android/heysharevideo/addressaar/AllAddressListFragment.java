@@ -484,15 +484,16 @@ public class AllAddressListFragment extends Fragment {
 
 			}else if(v.getId()== R.id.button_cancel || v.getId()== R.id.horizontal_button_cancel ) {
 				Log.i(Tag, "[user operation]: click mButtonCancel");
-//				if (mExCallBack instanceof VideoCallBack) {
-//					Syntony.getInstance().des();
-//				}
+				if (mExCallBack instanceof VideoCallBack) {
+					Syntony.getInstance().des();
+				}else {
+					getActivity().getSupportFragmentManager().popBackStack();
+				}
 //				if(mExCallBack instanceof MainCallBack){
 //					GBLog.i(Tag, "#####cancel1");
 //					Syntony.getInstance().des4();
 //					GBLog.i(Tag, "#####cancel2");
 //				}
-				getActivity().getSupportFragmentManager().popBackStack();
 			}else if(v.getId()== R.id.button_conferencing || v.getId()== R.id.horizontal_button_conferencing ) {
 				Log.i(Tag, "[user operation]: click mButtonConferencing");
 				if(mUData == null || mUData.size() <= 0){
@@ -537,7 +538,7 @@ public class AllAddressListFragment extends Fragment {
 					if (mExCallBack instanceof VideoCallBack) {
 						GBLog.i(Tag, "333333333333333333");
 						((VideoCallBack)mExCallBack).invite(users);
-						//Syntony.getInstance().des();
+						Syntony.getInstance().des();
 					}
 				}
               getActivity().getSupportFragmentManager().popBackStack();

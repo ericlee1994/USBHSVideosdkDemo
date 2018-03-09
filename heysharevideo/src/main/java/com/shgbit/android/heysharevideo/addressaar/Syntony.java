@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager;
@@ -57,6 +59,7 @@ public class Syntony {
     private List<UserOrganization> mContactList;
     private String[] mUsers;
     private boolean ispersonal;
+    private Toast mToast;
 
     public static Syntony getInstance () {
         if (mSyntony == null) {
@@ -134,8 +137,12 @@ public class Syntony {
 
         @Override
         public void onCreateMeeting(boolean result, String error, Meeting meeting) {
-            if(ispersonal){
-                mPersonalMeetingFrag.setCalling(meeting,true);
+            if(result){
+                if(ispersonal){
+                    mPersonalMeetingFrag.setCalling(meeting,true);
+                }
+            }else {
+                mPersonalMeetingFrag.showToast();
             }
         }
 
@@ -191,7 +198,9 @@ public class Syntony {
 
         @Override
         public void eventUserStateChanged(RefuseInfo[] refuseInfos, TimeoutInfo[] timeoutInfos) {
-
+            if (mPersonalMeetingFrag != null) {
+                mPersonalMeetingFrag.setTimeOut(timeoutInfos);
+            }
         }
 
         @Override
@@ -230,10 +239,10 @@ public class Syntony {
         }
     };
 
-//    public void des () {
-//        Log.e(TAG, "############des");
-//        ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mAllAddressListFrag).commit();
-//    }
+    public void des () {
+        Log.e(TAG, "############des");
+        ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mAllAddressListFrag).commit();
+    }
 //
 //    public void des2(){
 //        Log.e(TAG, "############des2");
@@ -256,7 +265,7 @@ public class Syntony {
             mAllAddressListFrag = new AllAddressListFragment();
             mAllAddressListFrag.setLayout(ismeeting,type,isReserve,mRuser,group);
             mAllAddressListFrag.setLoginName(LoginName);
-            transaction.add(mBackgroundId, mAllAddressListFrag).addToBackStack(null).commit();
+            transaction.replace(mBackgroundId, mAllAddressListFrag).commit();
             mAllAddressListFrag.setInCallBack(mInCallBack);
         }else if(index ==1){
             mPersonalAddressListFrag = new PersonalAddressListFragment();
@@ -432,6 +441,7 @@ public class Syntony {
             mGroupFrag.setListener();
         }
     }
+
 
 
     @Override

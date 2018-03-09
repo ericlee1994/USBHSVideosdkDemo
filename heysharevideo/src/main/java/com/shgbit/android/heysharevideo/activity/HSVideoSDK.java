@@ -33,12 +33,15 @@ import com.shgbit.android.heysharevideo.util.GBLog;
 public class HSVideoSDK {
     private static final String TAG = "HSVideoSDK";
     private String userName;
-    private Context context;
-    private static final HSVideoSDK ourInstance = new HSVideoSDK();
+    private Context mContext;
+    private static HSVideoSDK ourInstance;
     private HSSDKListener sdkListener;
     private NemoSDK nemoSDK;
 
     public static HSVideoSDK getInstance() {
+        if (ourInstance == null) {
+            ourInstance = new HSVideoSDK();
+        }
         return ourInstance;
     }
 
@@ -46,7 +49,7 @@ public class HSVideoSDK {
     }
 
     public void init(String serverIP, String userName, final Context context, HSSDKListener hssdkListener) {
-        this.context = context;
+        this.mContext = context.getApplicationContext();
         this.userName = userName;
         this.sdkListener = hssdkListener;
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
@@ -69,9 +72,9 @@ public class HSVideoSDK {
                         Settings settings = new Settings(id);
                         settings.setPrivateCloudAddress(url);
                         nemoSDK = NemoSDK.getInstance();
-                        nemoSDK.init(context, settings);
+                        nemoSDK.init(mContext, settings);
+                        sdkListener.initState(true);
                     }
-                    sdkListener.initState(true);
                 }
 
                 @Override
@@ -102,24 +105,26 @@ public class HSVideoSDK {
     }
 
     public void disconnect() {
+//        if (nemoSDK != null) {
+//            nemoSDK.shutdown();
+//        }
         ServerInteractManager.getInstance().logout();
     }
 
     public void startMeeting(String meetingNumber, String meetingPwd) {
-        Intent intent = new Intent(context, VideoActivity.class);
+        Intent intent = new Intent(mContext, VideoActivity.class);
         intent.putExtra("username", userName);
         intent.putExtra("password", meetingPwd);
         intent.putExtra("meetingName", "预约会议");
         intent.putExtra("number", meetingNumber);
-        context.startActivity(intent);
+        mContext.startActivity(intent);
     }
 
     public void finalizeSDK() {
-        if (nemoSDK != null) {
-            nemoSDK.shutdown();
-        }
+        ServerInteractManager.getInstance().finalize();
+
     }
-    public void openAddress(Context context, int layoutId, int layoutId2,String userName, AddressCallBack addressCallBack) {
+    public void openAddress(Context context, int layoutId, int layoutId2, String userName, AddressCallBack addressCallBack) {
         Syntony.getInstance().init(context, layoutId, layoutId2,userName);
         Syntony.getInstance().startAddressList(false, "vertical", false, null, null);
         Syntony.getInstance().setExCallBack(addressCallBack);

@@ -14,41 +14,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        HSVideoSDK.getInstance().init("http://www.shgbitcloud.com:4005", "lizheng", this,
+        HSVideoSDK.getInstance().init("http://www.shgbitcloud.com:4005", "test012", this,
                 new HSSDKListener() {
-            @Override
-            public void initState(boolean b) {
-                HSVideoSDK.getInstance().connect("lizheng","123456");
-            }
+                    @Override
+                    public void initState(boolean b) {
+                        HSVideoSDK.getInstance().connect("test012", "123456");
+                    }
 
-            @Override
-            public void connectState(boolean b) {
-                HSVideoSDK.getInstance().startMeeting("910069414403", "603918");
-            }
+                    @Override
+                    public void connectState(boolean b) {
+                        HSVideoSDK.getInstance().startMeeting("910030163948", "603918");
+                    }
 
-            @Override
-            public void disconnectState(boolean b) {
+                    @Override
+                    public void disconnectState(boolean b) {
 
-            }
-        });
-//        HSVideoSDK.getInstance().setSDKListener(new HSSDKListener() {
-//            @Override
-//            public void initState(boolean b) {
-//
-//            }
-//
-//            @Override
-//            public void connectState(boolean b) {
-//
-//            }
-//
-//            @Override
-//            public void disconnectState(boolean b) {
-//
-//            }
-//        });
-//        HSVideoSDK.getInstance().connect("lizheng","123456");
-//        HSVideoSDK.getInstance().startMeeting("910010569941", "603918");
+                    }
+                });
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.shgbit.android.heysharevideo.bean.MeetingRecord;
 import com.shgbit.android.heysharevideo.json.AddToGroupInfo;
 import com.shgbit.android.heysharevideo.json.BusyMeetingInfo;
 import com.shgbit.android.heysharevideo.json.CancelInviteInfo;
@@ -74,7 +75,7 @@ public class ServerInteractManager {
 	
 	public enum INTERACTTYPE {LOGIN,LOGINOUT,CONTACTS,ONLINE,GFCUSER,CREATE,JOIN,INVITE,KICKOUT,QUITE,END,STARTYUN,ENDYUN,RESERVE
 		,DELETE,UPDATE,BUSY,CONFIG,MEETING,CHECKPWD,MOTIFYPWD,PFCUSER,CANCLEINVITE,SYNCPID,SENDMSG,CREATEGROUP,DELETEGROUP,UPDATEGROUP
-		,QUERYGROUP,ADDTOGROUP,DELEFRMGROUP}
+		,QUERYGROUP,ADDTOGROUP,DELEFRMGROUP,START,STOP}
 
 	public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 	private OkHttpClient mOkHttpClient = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
@@ -95,7 +96,7 @@ public class ServerInteractManager {
 	public static ServerInteractManager instance;
 
 
-	private ArrayList<ServerConfigCallback> mConfigCallbacks;
+	private ArrayList<ServerConfigCallback> mConfigCallbacks = new ArrayList<>();
 	public void setServiceConfigCallback (ServerConfigCallback callback) {
 		if (callback == null) {
 			return;
@@ -156,6 +157,23 @@ public class ServerInteractManager {
 	public void removeServerInteractCallback (ServerInteractCallback callback) {
 		if (mInteractCallbacks != null) {
 			mInteractCallbacks.remove(callback);
+		}
+	}
+
+	private ArrayList<ServerRecordCallback> mRecordCallbacks = new ArrayList<>();
+	public void setServerRecordCallback (ServerRecordCallback callback) {
+		if (callback == null) {
+			return;
+		}
+		if (mRecordCallbacks == null) {
+			mRecordCallbacks = new ArrayList<>();
+		}
+		mRecordCallbacks.add(callback);
+	}
+
+	public void removeServerRecordCallback (ServerRecordCallback callback) {
+		if (mRecordCallbacks != null) {
+			mRecordCallbacks.remove(callback);
 		}
 	}
 
@@ -470,8 +488,8 @@ public class ServerInteractManager {
 		String url = mServiceUrl + "/meeting/" + meetingId;
 		new GetTask(url, INTERACTTYPE.MEETING).execute();
 	}
-	public String getSyncCurrentMeeting (String userName) {
-		String url = mServiceUrl + "/currentMeeting?userName=" + userName + "&sessionId=" +
+	public String getSyncCurrentMeeting () {
+		String url = mServiceUrl + "/currentMeeting?userName=" + mUserName + "&sessionId=" +
 				mSessionId + "&sessionType=" + SessionType;
 
 		return httpGet(url);
@@ -572,6 +590,24 @@ public class ServerInteractManager {
 		String url = mServiceUrl + "/group/members/delete";
 
 		new PostTask(url, new Gson().toJson(dfgi), INTERACTTYPE.DELEFRMGROUP).execute();
+	}
+
+	public void startRecord (MeetingRecord mr) {
+		if (mr != null) {
+			mr.setSessionId(mSessionId);
+		}
+
+		String url = mServiceUrl + "/meeting/record/start";
+		new PostTask(url, new Gson().toJson(mr), INTERACTTYPE.START).execute();
+	}
+
+	public void endRecord (MeetingRecord mr) {
+		if (mr != null) {
+			mr.setSessionId(mSessionId);
+		}
+
+		String url = mServiceUrl + "/meeting/record/end";
+		new PostTask(url, new Gson().toJson(mr), INTERACTTYPE.STOP).execute();
 	}
 
 	public static String getTimeStr2(long time) {
@@ -1360,6 +1396,54 @@ public class ServerInteractManager {
 						}
 					}
 					break;
+				case START:
+					Result result1= null;
+					try {
+						result1 = new Gson().fromJson(result, Result.class);
+					} catch (Throwable e) {
+						Log.e(TAG, "parse Result Throwable: " + e.toString());
+					}
+
+					if (result1 == null || result1.getResult().equalsIgnoreCase("failed") == true) {
+						for (ServerRecordCallback callback : mRecordCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.startRecord(false, result1 == null?"unknow error":result1.getFailedMessage());
+						}
+					} else {
+						for (ServerRecordCallback callback : mRecordCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.startRecord(true, "");
+						}
+					}
+					break;
+				case STOP:
+					Result result2 = null;
+					try {
+						result2 = new Gson().fromJson(result, Result.class);
+					} catch (Throwable e) {
+						Log.e(TAG, "parse Result Throwable: " + e.toString());
+					}
+
+					if (result2 == null || result2.getResult().equalsIgnoreCase("failed") == true) {
+						for (ServerRecordCallback callback : mRecordCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.endRecord(false, result2 == null?"unknow error":result2.getFailedMessage());
+						}
+					} else {
+						for (ServerRecordCallback callback : mRecordCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.endRecord(true, "");
+						}
+					}
+					break;
 				default:
 					break;
 				}
@@ -1503,14 +1587,10 @@ public class ServerInteractManager {
 								for (int i = 0; i < onlineUsers.length; i++) {
 									boolean isSame = false; 
 									for (int j = 0; j < online.getOnlineUsers().length; j++) {
-										if(onlineUsers[i].getUserName().equalsIgnoreCase(online.getOnlineUsers()[j].getUserName())==true) {
-											if (onlineUsers[i].getMobileStateSessionType().getStatus().equalsIgnoreCase(online.getOnlineUsers()[j].getMobileStateSessionType().getStatus()) == true) {
-												if (onlineUsers[i].getPCStateSessionType().getStatus().equalsIgnoreCase(online.getOnlineUsers()[j].getPCStateSessionType().getStatus()) == true) {
-													if (onlineUsers[i].getContentOnlyStateSessionType().getStatus().equalsIgnoreCase(online.getOnlineUsers()[j].getContentOnlyStateSessionType().getStatus()) == true) {
-														isSame = true;
-														break;
-													}
-												}
+										if (onlineUsers[i].getUserName().equals(online.getOnlineUsers()[j].getUserName()) == true) {
+											if (onlineUsers[i].getStatus().equals(online.getOnlineUsers()[j].getStatus()) == true) {
+												isSame = true;
+												break;
 											}
 										}
 									}

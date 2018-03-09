@@ -185,9 +185,7 @@ public class GroupAdapter extends BaseAdapter {
             return 0;
         }
         for(int i= 0;i<userOrganization.size();i++){
-            if(userOrganization.get(i).getPCStateSessionType().getStatus().equalsIgnoreCase("busy") || userOrganization.get(i).getPCStateSessionType().getStatus().equalsIgnoreCase("online") ||
-                    userOrganization.get(i).getMobileStateSessionType().getStatus().equalsIgnoreCase("busy") || userOrganization.get(i).getMobileStateSessionType().getStatus().equalsIgnoreCase("online") ||
-                    userOrganization.get(i).getContentOnlyStateSessionType().getStatus().equalsIgnoreCase("busy") || userOrganization.get(i).getContentOnlyStateSessionType().getStatus().equalsIgnoreCase("online")){
+            if(userOrganization.get(i).getStatus().equalsIgnoreCase("busy") || userOrganization.get(i).getStatus().equalsIgnoreCase("online")){
                 num +=1;
             }
         }

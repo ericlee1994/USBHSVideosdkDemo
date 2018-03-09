@@ -856,8 +856,8 @@ public class PopupView extends LinearLayout implements IVideoRecordCallBack {
     }
 
     @Override
-    public void startRecord(String result, String error) {
-        if (result.equalsIgnoreCase("failed") == true) {
+    public void startRecord(boolean result, String error) {
+        if (result == true) {
             Toast.makeText(mContext,"启动录像失败：" + error,Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(mContext,"开始录制！",Toast.LENGTH_SHORT).show();
@@ -871,8 +871,8 @@ public class PopupView extends LinearLayout implements IVideoRecordCallBack {
     }
 
     @Override
-    public void endRecord(String result, String error) {
-        if (result.equalsIgnoreCase("failed") == true) {
+    public void endRecord(boolean result, String error) {
+        if (result == true) {
             Toast.makeText(mContext,"停止录像失败：" + error,Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(mContext,"结束录制！",Toast.LENGTH_SHORT).show();

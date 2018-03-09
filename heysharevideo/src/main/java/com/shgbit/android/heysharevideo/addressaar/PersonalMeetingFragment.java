@@ -194,6 +194,11 @@ public class PersonalMeetingFragment extends Fragment {
 		initVideo();
 		startThread();
 	}
+
+	public void showToast(){
+		toast = Toast.makeText(mContext, mContext.getResources().getString(R.string.tip_3), Toast.LENGTH_SHORT);
+		toast.show();
+	}
 	
 	public void setTimeOut(TimeoutInfo[] timeoutInfos){
 		if(isBack == false){
@@ -292,6 +297,7 @@ public class PersonalMeetingFragment extends Fragment {
 									intent.putExtra("number",meeting.getMeetingId());
 									intent.putExtra("password",meeting.getPassword());
 									intent.putExtra("meetingName",meeting.getMeetingName());
+									intent.putExtra("username","xumeng");
 									getActivity().startActivity(intent);
 									mIsFinishHeartbeat = true;
 									getActivity().getSupportFragmentManager().popBackStack();
@@ -318,4 +324,4 @@ public class PersonalMeetingFragment extends Fragment {
 	}
 
 }
-    
+

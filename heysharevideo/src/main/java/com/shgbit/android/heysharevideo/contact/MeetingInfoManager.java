@@ -356,12 +356,12 @@ public class MeetingInfoManager {
 		CurrentMeetingInfo cmi = null;
 		try {
 
-			String userName = Common.USERNAME;
+//			String userName = Common.USERNAME;
 
 //			String url = Common.SERVICEIP + "/currentMeeting?userName=" + userName + "&sessionId=" + sessionId + "&sessionType=" + Common.SessionType;
 
 //			String result = httpGet(url);
-			String result = ServerInteractManager.getInstance().getSyncCurrentMeeting(userName);
+			String result = ServerInteractManager.getInstance().getSyncCurrentMeeting();
 //			GBLog.i(TAG,"result="+result);
 
 			cmi = WAJSONTool.parseObject(result, CurrentMeetingInfo.class);

@@ -1,6 +1,7 @@
 package com.shgbit.android.heysharevideo.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,83 +110,39 @@ public class OrganizationStructureAdapter extends BaseAdapter {
         	mAddressList_child.setVisibility(View.VISIBLE);
 
         	cChildId.setText(((UserOrganization)mDataList.get(position)).getDisplayName());
-
-			String phonestatus = ((UserOrganization)mDataList.get(position)).getMobileStateSessionType().getStatus();
-			String pcstatus = ((UserOrganization)mDataList.get(position)).getPCStateSessionType().getStatus();
-			String contentstatus = ((UserOrganization)mDataList.get(position)).getContentOnlyStateSessionType().getStatus();
-
-        	if(pcstatus.equalsIgnoreCase("online") || pcstatus.equalsIgnoreCase("busy")){
-				cChildPng.setImageResource(R.drawable.child_user_pc);
-				if (pcstatus.equalsIgnoreCase("busy")) {
+        	
+   			String status=((UserOrganization)mDataList.get(position)).getStatus();
+			if(status.equalsIgnoreCase("busy") || (status.equalsIgnoreCase("online"))){
+				if (status.equalsIgnoreCase("busy")) {
 					cChildStatus.setText(mcontext.getString(R.string.person_busy));
 					cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.busy_color));
+   					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.busy_color));
 				} else {
 					cChildStatus.setText(mcontext.getString(R.string.person_online));
 					cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.online_color));
+   					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.online_color));
 				}
+				
 				if(((UserOrganization)mDataList.get(position)).isSelect()==true){
 					cChildSelect.setImageResource(R.drawable.icon_status_select);
-					cChildId.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+   					cChildPng.setImageResource(R.drawable.child_user_selecdt);
+   					cChildId.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+   					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
 				}else{
 					cChildSelect.setImageResource(R.drawable.icon_status_normal);
-                    cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
+   					cChildPng.setImageResource(R.drawable.child_user_normal);
 				}
-			}else {
-				if(phonestatus.equalsIgnoreCase("online") || phonestatus.equalsIgnoreCase("busy")){
-					cChildPng.setImageResource(R.drawable.child_user_mobile);
-					if (phonestatus.equalsIgnoreCase("busy")) {
-						cChildStatus.setText(mcontext.getString(R.string.person_busy));
-						cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-						cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.busy_color));
-					} else {
-						cChildStatus.setText(mcontext.getString(R.string.person_online));
-						cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-						cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-					}
-					if(((UserOrganization)mDataList.get(position)).isSelect()==true){
-						cChildSelect.setImageResource(R.drawable.icon_status_select);
-						cChildId.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-						cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-					}else{
-						cChildSelect.setImageResource(R.drawable.icon_status_normal);
-                        cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-					}
-				}else {
-					if(contentstatus.equalsIgnoreCase("online") || contentstatus.equalsIgnoreCase("busy")){
-						cChildPng.setImageResource(R.drawable.child_user_content);
-						if (contentstatus.equalsIgnoreCase("busy")) {
-							cChildStatus.setText(mcontext.getString(R.string.person_busy));
-							cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-							cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.busy_color));
-						} else {
-							cChildStatus.setText(mcontext.getString(R.string.person_online));
-							cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-							cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-						}
-						if(((UserOrganization)mDataList.get(position)).isSelect()==true){
-							cChildSelect.setImageResource(R.drawable.icon_status_select);
-							cChildId.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-							cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-						}else{
-							cChildSelect.setImageResource(R.drawable.icon_status_normal);
-                            cChildId.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-						}
-					}else {
-						cChildSelect.setImageResource(R.drawable.icon_state_offline);
-						cChildStatus.setText(mcontext.getString(R.string.person_gone));
-						cChildId.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
-						cChildPng.setImageResource(R.drawable.child_user_offline);
-						cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
-
-						if(((UserOrganization)mDataList.get(position)).isSelect()==true){
-							cChildSelect.setImageResource(R.drawable.icon_status_select);
-							cChildId.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-							cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-						}
-					}
+			}else{
+				cChildSelect.setImageResource(R.drawable.icon_state_offline);
+				cChildStatus.setText(mcontext.getString(R.string.person_gone));
+				cChildId.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
+				cChildPng.setImageResource(R.drawable.child_user_offline);
+				cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
+				if(((UserOrganization)mDataList.get(position)).isSelect()==true){
+					cChildSelect.setImageResource(R.drawable.icon_status_select);
+   					cChildPng.setImageResource(R.drawable.child_user_selecdt);
+   					cChildId.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+   					cChildStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
 				}
 			}
 
@@ -290,9 +247,7 @@ public class OrganizationStructureAdapter extends BaseAdapter {
 		}
 		if (rootOrganization.getUserOrganizations() != null){
 			for(UserOrganization mOrganization:rootOrganization.getUserOrganizations()){
-				if(mOrganization.getPCStateSessionType().getStatus().equalsIgnoreCase("busy") || mOrganization.getPCStateSessionType().getStatus().equalsIgnoreCase("online") ||
-						mOrganization.getMobileStateSessionType().getStatus().equalsIgnoreCase("busy") || mOrganization.getMobileStateSessionType().getStatus().equalsIgnoreCase("online") ||
-						mOrganization.getContentOnlyStateSessionType().getStatus().equalsIgnoreCase("busy") || mOrganization.getContentOnlyStateSessionType().getStatus().equalsIgnoreCase("online")){
+				if(mOrganization.getStatus().equalsIgnoreCase("busy") || mOrganization.getStatus().equalsIgnoreCase("online")){
 					onlineName +=1;
 				}
 			}
@@ -302,6 +257,7 @@ public class OrganizationStructureAdapter extends BaseAdapter {
 				onlineName += getOnlineNum(ro);
 			}
 		}
+		Log.i("########","Onlinenum:"+onlineName);
 		return onlineName;
 	}
 

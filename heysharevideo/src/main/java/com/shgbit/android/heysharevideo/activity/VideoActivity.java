@@ -226,6 +226,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
         mRecallMeeting.setId(number);
         mRecallMeeting.setPw(password);
         mRecallMeeting.setName(meetingName);
+        GBLog.i(TAG, "number:" + number + "  meetingName" + meetingName);
 
         nemoSDK = NemoSDK.getInstance();
 
@@ -1141,7 +1142,6 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                 GBLog.i(TAG, "try to connect Nemo...");
 //                nemoSDK.connectNemo(SystemParams.getUsername() + "?t_mobile", SystemParams.getUsername() + "?t_mobile", mConnectNemoCallback);
                 nemoSDK.loginExternalAccount(Common.USERNAME + "?t_mobile", Common.USERNAME + "?t_mobile", mConnectNemoCallback);
-
             } else {
                 joinMeeting(number, password);
             }
