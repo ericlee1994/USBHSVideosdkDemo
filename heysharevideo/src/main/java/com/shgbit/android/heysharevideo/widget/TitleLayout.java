@@ -166,4 +166,7 @@ public class TitleLayout extends LinearLayout {
         mClockView.startTime(time);
     }
 
+    public void finishClock(){
+        mClockView.stopTime();
+    }
 }

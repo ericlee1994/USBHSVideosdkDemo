@@ -56,6 +56,7 @@ import com.shgbit.android.heysharevideo.json.TimeoutInfo;
 import com.shgbit.android.heysharevideo.json.UpdateGroupInfo;
 import com.shgbit.android.heysharevideo.json.XiaoYuConfig;
 import com.shgbit.android.heysharevideo.json.YunDesktop;
+import com.wa.util.WAJSONTool;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -160,6 +161,12 @@ public class ServerInteractManager {
 		}
 	}
 
+	public void removeAllServerInteractCallbacks () {
+		if (mInteractCallbacks != null) {
+			mInteractCallbacks.clear();
+		}
+	}
+
 	private ArrayList<ServerRecordCallback> mRecordCallbacks = new ArrayList<>();
 	public void setServerRecordCallback (ServerRecordCallback callback) {
 		if (callback == null) {
@@ -177,9 +184,9 @@ public class ServerInteractManager {
 		}
 	}
 
-	public void removeAllServerInteractCallbacks () {
-		if (mInteractCallbacks != null) {
-			mInteractCallbacks.clear();
+	public void removeAllServerRecordCallbacks () {
+		if (mRecordCallbacks != null) {
+			mRecordCallbacks.clear();
 		}
 	}
 
@@ -222,7 +229,11 @@ public class ServerInteractManager {
 			removeAllServerInteractCallbacks();
 			mInteractCallbacks = null;
 			removeAllServerAddressCallbacks();
-			mInteractCallbacks.clear();
+			mAddressCallbacks.clear();
+			removeAllServerRecordCallbacks();
+			mRecordCallbacks = null;
+
+			instance = null;
 
 		} catch (Throwable e) {
 			Log.e(TAG, "finalize Throwable: " + e.toString());
@@ -658,7 +669,7 @@ public class ServerInteractManager {
 					 try {
 						 String response = httpGet(url2);
 						 if (response != null && response.equals("") == false) {
-							 HeartBeatInfo hbi = new Gson().fromJson(response, HeartBeatInfo.class);
+							 HeartBeatInfo hbi = WAJSONTool.parseObject(response, HeartBeatInfo.class);
 							 if (hbi != null) {
 								 if (hbi.getResult().equals("failed") == true) {
 									 Log.e(TAG, "heartbeat failed: " + response);

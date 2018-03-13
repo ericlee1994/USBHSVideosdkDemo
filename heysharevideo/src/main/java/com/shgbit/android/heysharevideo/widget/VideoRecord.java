@@ -20,7 +20,7 @@ import com.shgbit.android.heysharevideo.util.VCUtils;
  */
 
 public class VideoRecord {
-    private final String TAG = "VideoRecord";
+    private static final String TAG = "VideoRecord";
 
     private long startTime = 0;
 
@@ -39,9 +39,23 @@ public class VideoRecord {
 
     public static VideoRecord getInstance(Context context) {
         if (mCollector == null) {
-            mCollector = new VideoRecord(context);
+            mCollector = new VideoRecord(context.getApplicationContext());
         }
         return mCollector;
+    }
+
+    public void finish () {
+        try {
+            if (thread != null) {
+                thread.join(100);
+                thread.interrupt();
+                thread = null;
+            }
+            mCollector = null;
+            ServerInteractManager.getInstance().removeServerRecordCallback(mCallback);
+        } catch (Throwable e) {
+            GBLog.e(TAG, "finalize Throwable:" + VCUtils.CaughtException(e));
+        }
     }
 
     public void setCallBack(IVideoRecordCallBack iV) {

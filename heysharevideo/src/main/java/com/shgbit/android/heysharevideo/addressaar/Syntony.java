@@ -95,7 +95,7 @@ public class Syntony {
 
 
     public void init(Context c, int id, int id2,String name){
-        mContext = c;
+        mContext = c.getApplicationContext();
         mBackgroundId = id;
         mBackgroundId2 = id2;
         LoginName = name;

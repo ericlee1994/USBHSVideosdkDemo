@@ -260,6 +260,8 @@ public class MyVideoVIew extends ViewGroup{
                         }
                     }
                     break;
+                default:
+                    break;
             }
         }
     };
@@ -393,6 +395,8 @@ public class MyVideoVIew extends ViewGroup{
                         vr = getWidth()*11/12;
                         vb = getHeight();
                         break;
+                    default:
+                        break;
                 }
             } else if (display_mode.equals(DISPLAY_MODE.FULL_PIP)) {
                 switch (i) {
@@ -463,6 +467,8 @@ public class MyVideoVIew extends ViewGroup{
                         vt = vTop;
                         vr = 5 * y + 5 * vWidth;
                         vb = vTop + vHeigt;
+                        break;
+                    default:
                         break;
                 }
             }

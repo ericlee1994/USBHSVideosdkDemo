@@ -532,7 +532,7 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
 
     @Override
     public void startRecord(boolean result, String error) {
-        if (result == true) {
+        if (result == false) {
             Toast.makeText(mContext,"启动录像失败：" + error,Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(mContext,"开始录制！",Toast.LENGTH_SHORT).show();
@@ -547,7 +547,7 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
 
     @Override
     public void endRecord(boolean result, String error) {
-        if (result == true) {
+        if (result == false) {
             Toast.makeText(mContext,"停止录像失败：" + error,Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(mContext,"结束录制！",Toast.LENGTH_SHORT).show();
@@ -754,6 +754,11 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
         } else {
             mSharePicPopView.showAsDropDown(mImageSharepic,0,-(mImageBtn.getMeasuredHeight()+20));
         }
+    }
+
+    public void destroy() {
+        VideoRecord.getInstance(mContext).finish();
+        mRecordHandler.removeCallbacksAndMessages(null);
     }
 }
 

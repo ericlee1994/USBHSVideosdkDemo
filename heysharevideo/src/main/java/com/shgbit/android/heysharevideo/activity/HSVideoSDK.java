@@ -34,21 +34,22 @@ public class HSVideoSDK {
     private static final String TAG = "HSVideoSDK";
     private String userName;
     private Context mContext;
-    private static HSVideoSDK ourInstance;
+
     private HSSDKListener sdkListener;
     private NemoSDK nemoSDK;
-
-    public static HSVideoSDK getInstance() {
-        if (ourInstance == null) {
-            ourInstance = new HSVideoSDK();
-        }
-        return ourInstance;
-    }
 
     private HSVideoSDK() {
     }
 
-    public void init(String serverIP, String userName, final Context context, HSSDKListener hssdkListener) {
+    public static HSVideoSDK getInstance() {
+        return Holder.mInstance;
+    }
+
+    private static class Holder {
+        private static final HSVideoSDK mInstance = new HSVideoSDK();
+    }
+
+    public void init(String serverIP, String userName, Context context, HSSDKListener hssdkListener) {
         this.mContext = context.getApplicationContext();
         this.userName = userName;
         this.sdkListener = hssdkListener;
@@ -91,7 +92,7 @@ public class HSVideoSDK {
 
         }catch (Exception e) {
             GBLog.e(TAG, e.toString());
-            hssdkListener.initState(false);
+            sdkListener.initState(false);
         }
 
     }
@@ -223,7 +224,7 @@ public class HSVideoSDK {
 
         @Override
         public void eventInvitedMeeting(InvitedMeeting meeting) {
-
+            sdkListener.inviteMeeting(meeting);
         }
 
         @Override

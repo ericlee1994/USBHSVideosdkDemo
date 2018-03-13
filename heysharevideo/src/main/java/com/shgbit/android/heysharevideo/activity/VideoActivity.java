@@ -52,6 +52,7 @@ import com.shgbit.android.heysharevideo.callback.ITitleCallBack;
 import com.shgbit.android.heysharevideo.callback.IVideoInviteCallBack;
 import com.shgbit.android.heysharevideo.callback.IVideoViewCallBack;
 import com.shgbit.android.heysharevideo.contact.MeetingInfoManager;
+import com.shgbit.android.heysharevideo.interactmanager.MeetingCeche;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager;
 import com.shgbit.android.heysharevideo.json.BusyMeetingInfo;
@@ -145,6 +146,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
     private static final int MSG_BTN_SWITCH_VIDEO = 0x200;
     private static final int MSG_BTN_VOICE_MODE = 0x300;
     private static final int MSG_BTN_SWITCH_CAMERA = 0x400;
+    private static final int MSG_BTN_VOICE_MODE_UNCHANGED = 0x500;
 
     private final int mScreenWidth = Common.SCREENHEIGHT;
     private final int mScreenHeight = Common.SCREENWIDTH;
@@ -183,7 +185,6 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
     private TitleLayout mTopLayout;
     private LinearLayout mBottomLayout;
     private PopupOldView popupView;
-    private CustomImageView mClockView;
     private DISPLAY_MODE lastMode;
     private DISPLAY_MODE lastModeFlag;
 
@@ -425,7 +426,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                                     mUIHandler.removeMessages(RE_MAKECALL);
                                     hideSoftKeyboard();
                                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                                    mUIHandler.sendEmptyMessage(MSG_BTN_VOICE_MODE);
+                                    mUIHandler.sendEmptyMessage(MSG_BTN_VOICE_MODE_UNCHANGED);
 
                                     MeetingInfoManager.getInstance().NemoChange(null, NemoSDK.getLocalVideoStreamID());
                                     MeetingInfoManager.getInstance().StateChange(mUsers, STATUS.INVITING);
@@ -616,24 +617,21 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                     popupView.StopVideotape();
                 }
                 if (type == VCDialog.DialogType.Invite) {
-//
-//                    InvitedMeeting m = (InvitedMeeting) object;
-//
-//                    vcApplication.invitedMeeting = m;
-//
-//                    mExitState = DISCONNECT_STATE.RECALL;
-//
-//                    if (m != null && m.getMeetingId() != null && m.getPassword() != null) {
-//
-//                        mRecallMeeting = new CallMeetingInfo();
-//                        mRecallMeeting.setId(vcApplication.invitedMeeting.getMeetingId());
-//                        mRecallMeeting.setPw(vcApplication.invitedMeeting.getPassword());
-//                        mRecallMeeting.setName(vcApplication.invitedMeeting.getMeetingName());
-//
-//                        hangup();
-//
-//                    }
-//                    MessageData.getInstance().updateMessageStatus(m.getMeetingId(), true);
+
+                    InvitedMeeting m = (InvitedMeeting) object;
+
+                    mExitState = DISCONNECT_STATE.RECALL;
+
+                    if (m != null && m.getMeetingId() != null && m.getPassword() != null) {
+
+                        mRecallMeeting = new CallMeetingInfo();
+                        mRecallMeeting.setId(m.getMeetingId());
+                        mRecallMeeting.setPw(m.getPassword());
+                        mRecallMeeting.setName(m.getMeetingName());
+
+                        hangup();
+
+                    }
 
                 } else if (type == VCDialog.DialogType.Handup) {
                     hangup();
@@ -925,24 +923,8 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
 //                    showDialog(msg.obj, false, VCDialog.DialogStyle.Normal);
                         break;
                     case DIALOGINVITED:
-//                        InvitedMeeting invitedMeeting = (InvitedMeeting) msg.obj;
-//                        if (Common.mJoinStatus == 0) {
-//                            if (VCNotification.isBackground(activity)) {
-//                                VCNotification.show(activity, invitedMeeting);
-//                            }
-//                        }
-//                        activity.showDialog(invitedMeeting, VCDialog.DialogType.Invite);
-//
-//                        Meeting meeting = MeetingCeche.getInstance().getMeeting(invitedMeeting.getMeetingId());
-//                        if (meeting != null) {
-//                            MessageData.getInstance().addMessage(meeting, false);
-//                            Common.isMsgUpdate = true;
-//                            if (Common.mJoinStatus == 0) {
-//                                if (VCNotification.isBackground(activity)) {
-//                                    VCNotification.setBadgeCount(activity);
-//                                }
-//                            }
-//                        }
+                        InvitedMeeting invitedMeeting = (InvitedMeeting) msg.obj;
+                        activity.showDialog(invitedMeeting, VCDialog.DialogType.Invite);
                         break;
                     case CLOSEMIC:
                         activity.nemoSDK.enableMic(activity.mic,true);
@@ -977,6 +959,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                         activity.nemoSDK.switchCamera(activity.foregroundCamera ? 1 : 0);
                         break;
                     case MSG_BTN_VOICE_MODE:
+                        activity.audioMode = !activity.audioMode;
                         activity.nemoSDK.switchCallMode(activity.audioMode);
                         MeetingInfoManager.getInstance().ModeVoice(activity.audioMode);
                         if (!activity.audioMode) {
@@ -987,7 +970,10 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                             }
                             activity.nemoSDK.setVideoMute(activity.closeCamera);
                         }
-                        activity.audioMode = !activity.audioMode;
+                        break;
+                    case MSG_BTN_VOICE_MODE_UNCHANGED:
+                        activity.nemoSDK.switchCallMode(activity.audioMode);
+                        MeetingInfoManager.getInstance().ModeVoice(activity.audioMode);
                         break;
                     case TOAST:
                         Toast.makeText(activity, activity.getString(R.string.tip_19), Toast.LENGTH_LONG).show();
@@ -1185,7 +1171,6 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                 || displayMode.equals(DISPLAY_MODE.NOT_FULL_QUARTER)) {
             mTopLayout = new TitleLayout(this);
             mBottomLayout = new LinearLayout(this);
-            mClockView = new CustomImageView(this);
             popupView = new PopupOldView(this, mic, closeCamera, audioMode);
             videoView = new MyVideoVIew(this, displayMode);
 
@@ -1611,7 +1596,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
     private void Finish() {
         try {
             nemoSDK.switchCamera(1);
-            mClockView.stopTime();
+            mTopLayout.finishClock();
             mDialog = null;
             modeDialog = null;
 
@@ -1627,6 +1612,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
 //            MQTTClient.release();
 
             videoView.destroy();
+            popupView.destroy();
             finish();
         } catch (Throwable e) {
             GBLog.e(TAG, "Finish Throwable:" + VCUtils.CaughtException(e));

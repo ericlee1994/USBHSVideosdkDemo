@@ -20,7 +20,7 @@ import com.shgbit.android.heysharevideo.R;
  */
 
 public class CustomImageView extends View {
-    private String TAG = "CustomTextView";
+    private static final String TAG = "CustomImageView";
     private int IMAGESCALE_FILLXY = 0;
     private int IMAGESCALE_CENTER = 1;
 
@@ -257,8 +257,9 @@ public class CustomImageView extends View {
         stepTimeHandler = new Handler();
         startTime = System.currentTimeMillis() - duration * 1000;
         mTicker = new Runnable() {
+            @Override
             public void run() {
-                if (mTickerStopped) return;
+                if (mTickerStopped){return;}
                 String content = showTimeCount(System.currentTimeMillis() - startTime);
                 mText = content;
                 invalidate();
@@ -273,6 +274,7 @@ public class CustomImageView extends View {
     }
 
     public void stopTime(){
+        stepTimeHandler.removeCallbacksAndMessages(null);
         mTickerStopped = true;
     }
 }
