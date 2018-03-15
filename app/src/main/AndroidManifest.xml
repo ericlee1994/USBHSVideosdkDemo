@@ -35,6 +35,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:largeHeap="true">
+        <meta-data
+            android:name="HS_APP_ID"
+            android:value="47004059b75c1e28b4122bcab9e7a514"
+            />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

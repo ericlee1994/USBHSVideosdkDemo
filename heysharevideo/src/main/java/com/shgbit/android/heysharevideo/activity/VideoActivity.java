@@ -52,7 +52,6 @@ import com.shgbit.android.heysharevideo.callback.ITitleCallBack;
 import com.shgbit.android.heysharevideo.callback.IVideoInviteCallBack;
 import com.shgbit.android.heysharevideo.callback.IVideoViewCallBack;
 import com.shgbit.android.heysharevideo.contact.MeetingInfoManager;
-import com.shgbit.android.heysharevideo.interactmanager.MeetingCeche;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager;
 import com.shgbit.android.heysharevideo.json.BusyMeetingInfo;
@@ -196,6 +195,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
     private FragmentTransaction transaction;
     private RequestCtrl requestCtrl;
 //    private CustomPaintView mainView;
+    private Syntony syntony;
 
 
     @Override
@@ -227,7 +227,6 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
         mRecallMeeting.setId(number);
         mRecallMeeting.setPw(password);
         mRecallMeeting.setName(meetingName);
-        GBLog.i(TAG, "number:" + number + "  meetingName" + meetingName);
 
         nemoSDK = NemoSDK.getInstance();
 
@@ -247,6 +246,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         requestWindowFeature(FEATURE_NO_TITLE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         setContentView(R.layout.activity_vc);
         initView();
@@ -268,7 +268,8 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
 
 //        requestCtrl.sync();
 //        requestCtrl.setiCtrlCallBack(ictrlCallback);
-        Syntony.getInstance().init(this, R.id.video_fragment,R.id.llyt_button2, Common.USERNAME);
+        syntony = new Syntony();
+        syntony.init(this, R.id.video_fragment,R.id.llyt_button2, Common.USERNAME);
 
     }
     private VideoCallBack videoCallBack = new VideoCallBack() {
@@ -640,7 +641,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
                     Finish();
 
                 } else if (type == VCDialog.DialogType.ErrorHangup) {
-                    hangup();
+                    quitMeeting();
                     Finish();
 
                 } else if (type == VCDialog.DialogType.Recall) {
@@ -1376,8 +1377,8 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
         } else {
             if (BTN_ADD_PERSON.equals(type)) {
                 GBLog.i(TAG, "[user operation]click add person");
-                Syntony.getInstance().startAddressList(true, "horizontal", false, null, null);
-                Syntony.getInstance().setExCallBack(videoCallBack);
+                syntony.startAddressList(true, "horizontal", false, null, null);
+                syntony.setExCallBack(videoCallBack);
             } else if (BTN_BAN_MIC.equals(type)) {
                 GBLog.i(TAG, "[user operation]click mic btn:" + mic);
                 mUIHandler.sendEmptyMessage(MSG_BTN_SWITCH_MIC);
@@ -1604,7 +1605,7 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
             nemoSDK.setNemoKickOutListener(null);
 
             videoView.setOnClickListener(null);
-            ServerInteractManager.getInstance().removeAllServerInteractCallbacks();
+            ServerInteractManager.getInstance().removeServerInteractCallback(this);
 
             mUIHandler.removeCallbacksAndMessages(null);
             MeetingInfoManager.destory();
@@ -1613,6 +1614,8 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
 
             videoView.destroy();
             popupView.destroy();
+            syntony.destroy();
+            syntony = null;
             finish();
         } catch (Throwable e) {
             GBLog.e(TAG, "Finish Throwable:" + VCUtils.CaughtException(e));
@@ -1908,6 +1911,11 @@ public class VideoActivity extends FragmentActivity implements IPopViewCallBack,
 
     @Override
     public void eventInvitingCancle(InviteCancledInfo ici) {
+
+    }
+
+    @Override
+    public void onValidate(boolean result, String err) {
 
     }
 

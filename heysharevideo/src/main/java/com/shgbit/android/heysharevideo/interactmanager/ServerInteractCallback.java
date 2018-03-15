@@ -34,5 +34,6 @@ public interface ServerInteractCallback {
 	void eventEndWhiteBoard();
 	void eventDifferentPlaceLogin();
 	void eventInvitingCancle(InviteCancledInfo ici);
+	void onValidate (boolean result, String err);
 
 }

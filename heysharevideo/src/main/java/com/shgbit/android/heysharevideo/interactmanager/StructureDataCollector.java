@@ -4,7 +4,6 @@ package com.shgbit.android.heysharevideo.interactmanager;
 import android.os.Environment;
 import android.util.Log;
 
-import com.shgbit.android.heysharevideo.addressaar.Syntony;
 import com.shgbit.android.heysharevideo.json.ContentOnlyStateSessionType;
 import com.shgbit.android.heysharevideo.json.Favorite;
 import com.shgbit.android.heysharevideo.json.Group;
@@ -60,6 +59,7 @@ public class StructureDataCollector {
 
 	public interface ContactsUpdateListener{
 		void onContactsUpdate();
+		void onGroupUpdate();
 	}
 
 	public StructureDataCollector(){
@@ -134,7 +134,10 @@ public class StructureDataCollector {
 		@Override
 		public void onAddToGroup(boolean success, String error) {
 			if (success) {
-				Syntony.getInstance().setGroupListener();
+				if(mContactsListener != null){
+					mContactsListener.onGroupUpdate();
+				}
+//				Syntony.getInstance().setGroupListener();
 				ServerInteractManager.getInstance().queryGroup(new QueryGroupInfo());
 			}
 		}

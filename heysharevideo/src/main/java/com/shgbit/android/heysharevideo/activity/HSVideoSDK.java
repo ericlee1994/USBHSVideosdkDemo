@@ -2,6 +2,8 @@ package com.shgbit.android.heysharevideo.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.util.DisplayMetrics;
 
 import com.ainemo.sdk.otf.NemoSDK;
@@ -21,6 +23,7 @@ import com.shgbit.android.heysharevideo.json.PushConfig;
 import com.shgbit.android.heysharevideo.json.RefuseInfo;
 import com.shgbit.android.heysharevideo.json.TimeoutInfo;
 import com.shgbit.android.heysharevideo.json.User;
+import com.shgbit.android.heysharevideo.json.ValidateInfo;
 import com.shgbit.android.heysharevideo.json.XiaoYuConfig;
 import com.shgbit.android.heysharevideo.json.YunDesktop;
 import com.shgbit.android.heysharevideo.util.Common;
@@ -33,6 +36,7 @@ import com.shgbit.android.heysharevideo.util.GBLog;
 public class HSVideoSDK {
     private static final String TAG = "HSVideoSDK";
     private String userName;
+    private String serverIP;
     private Context mContext;
 
     private HSSDKListener sdkListener;
@@ -52,10 +56,10 @@ public class HSVideoSDK {
     public void init(String serverIP, String userName, Context context, HSSDKListener hssdkListener) {
         this.mContext = context.getApplicationContext();
         this.userName = userName;
+        this.serverIP = serverIP;
         this.sdkListener = hssdkListener;
-        DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        Common.SCREENHEIGHT = dm.widthPixels;
-        Common.SCREENWIDTH = dm.heightPixels;
+        ServerInteractManager.getInstance().setServerInteractCallback(serverInteractCallback);
+//        checkID();
         try {
             ServerInteractManager.getInstance().init(serverIP, userName);
             ServerInteractManager.getInstance().getSystemConfig();
@@ -88,12 +92,13 @@ public class HSVideoSDK {
 
                 }
             });
-            ServerInteractManager.getInstance().setServerInteractCallback(serverInteractCallback);
-
         }catch (Exception e) {
-            GBLog.e(TAG, e.toString());
             sdkListener.initState(false);
+            GBLog.e(TAG, "init:" + e.toString());
         }
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        Common.SCREENHEIGHT = dm.widthPixels;
+        Common.SCREENWIDTH = dm.heightPixels;
 
     }
 
@@ -106,9 +111,6 @@ public class HSVideoSDK {
     }
 
     public void disconnect() {
-//        if (nemoSDK != null) {
-//            nemoSDK.shutdown();
-//        }
         ServerInteractManager.getInstance().logout();
     }
 
@@ -118,6 +120,7 @@ public class HSVideoSDK {
         intent.putExtra("password", meetingPwd);
         intent.putExtra("meetingName", "预约会议");
         intent.putExtra("number", meetingNumber);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
     }
 
@@ -126,12 +129,33 @@ public class HSVideoSDK {
 
     }
     public void openAddress(Context context, int layoutId, int layoutId2, String userName, AddressCallBack addressCallBack) {
-        Syntony.getInstance().init(context, layoutId, layoutId2,userName);
-        Syntony.getInstance().startAddressList(false, "vertical", false, null, null);
-        Syntony.getInstance().setExCallBack(addressCallBack);
+        Syntony syntony = new Syntony();
+        syntony.init(context, layoutId, layoutId2,userName);
+        syntony.startAddressList(false, "vertical", false, null, null);
+        syntony.setExCallBack(addressCallBack);
     }
 
-    ServerInteractCallback serverInteractCallback = new ServerInteractCallback() {
+    private void checkID() {
+        try {
+            ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(),
+                    PackageManager.GET_META_DATA);
+            String id = appInfo.metaData.getString("HS_APP_ID");
+            if (id == null) {
+                sdkListener.initState(false);
+                GBLog.e(TAG, "APP_ID:null");
+            }
+            ValidateInfo validateInfo = new ValidateInfo();
+            validateInfo.setPkgId(mContext.getPackageName());
+            validateInfo.setAppId(id);
+            GBLog.e(TAG, "pkgId:" + mContext.getPackageName() + ",appId:" + id);
+            ServerInteractManager.getInstance().validate(validateInfo);
+        }catch (Exception e) {
+            GBLog.e(TAG, e.toString());
+        }
+
+    }
+
+    private ServerInteractCallback serverInteractCallback = new ServerInteractCallback() {
         @Override
         public void onLogin(boolean result, String error, User user) {
             sdkListener.connectState(result);
@@ -255,6 +279,17 @@ public class HSVideoSDK {
         @Override
         public void eventInvitingCancle(InviteCancledInfo ici) {
 
+        }
+
+        @Override
+        public void onValidate(boolean result, String err) {
+            if (result) {
+                GBLog.e(TAG, "onValidate success");
+
+            }else {
+                sdkListener.initState(false);
+                GBLog.e(TAG, "onValidate:" + err);
+            }
         }
     };
 

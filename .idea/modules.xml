@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HSVideosdkDemo.iml" filepath="$PROJECT_DIR$/HSVideosdkDemo.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/heyshareuvc/heyshareuvc.iml" filepath="$PROJECT_DIR$/heyshareuvc/heyshareuvc.iml" />
       <module fileurl="file://$PROJECT_DIR$/heysharevideo/heysharevideo.iml" filepath="$PROJECT_DIR$/heysharevideo/heysharevideo.iml" />
     </modules>
   </component>

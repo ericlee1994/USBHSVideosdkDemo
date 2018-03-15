@@ -485,7 +485,9 @@ public class AllAddressListFragment extends Fragment {
 			}else if(v.getId()== R.id.button_cancel || v.getId()== R.id.horizontal_button_cancel ) {
 				Log.i(Tag, "[user operation]: click mButtonCancel");
 				if (mExCallBack instanceof VideoCallBack) {
-					Syntony.getInstance().des();
+					Syntony syntony = new Syntony();
+					syntony.des();
+					//Syntony.getInstance().des();
 				}else {
 					getActivity().getSupportFragmentManager().popBackStack();
 				}
@@ -538,7 +540,9 @@ public class AllAddressListFragment extends Fragment {
 					if (mExCallBack instanceof VideoCallBack) {
 						GBLog.i(Tag, "333333333333333333");
 						((VideoCallBack)mExCallBack).invite(users);
-						Syntony.getInstance().des();
+						Syntony syntony = new Syntony();
+						syntony.des();
+						//Syntony.getInstance().des();
 					}
 				}
               getActivity().getSupportFragmentManager().popBackStack();
