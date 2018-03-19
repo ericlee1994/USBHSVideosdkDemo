@@ -19,7 +19,7 @@ android {
 
     repositories {
         flatDir {
-            dirs '../app/libs','libs'
+            dirs '../app/libs','libs','../heysharevideo/libs'
         }
     }
 }

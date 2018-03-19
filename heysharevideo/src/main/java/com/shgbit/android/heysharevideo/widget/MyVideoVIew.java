@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.ainemo.sdk.otf.NemoSDK;
+import com.ainemo.sdk.otf.OpenGLTextureView;
 import com.shgbit.android.heysharevideo.bean.DISPLAY_MODE;
 import com.shgbit.android.heysharevideo.bean.DisplayType;
 import com.shgbit.android.heysharevideo.bean.MemberInfo;
@@ -36,6 +38,7 @@ public class MyVideoVIew extends ViewGroup{
     private ArrayList<VI> otherList = new ArrayList<VI>();
     private IVideoViewCallBack iVideoViewCallBack;
     private Handler handler = new Handler();
+    private OpenGLTextureView localVideoView;
 
     private final int UPDATEVIEW = 0x001;
     private final int HIDELAYOUT = 0x002;
@@ -93,6 +96,11 @@ public class MyVideoVIew extends ViewGroup{
             addView(viewLayout);
             mScreenList.add(viewLayout);
         }
+
+        localVideoView = new OpenGLTextureView(getContext(),true);
+        localVideoView.setSourceID(NemoSDK.getInstance().getLocalVideoStreamID());
+        localVideoView.setContent(false);
+        addView(localVideoView);
     }
 
     public void offLocalVoice(boolean hasVoice){
@@ -321,7 +329,7 @@ public class MyVideoVIew extends ViewGroup{
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        for (int i = 0; i < mScreenList.size(); i++) {
+        for (int i = 1; i < mScreenList.size(); i++) {
             if (mScreenList.get(i) == null && mScreenList.get(i).getVideoCellView() != null) {
                 continue;
             }
@@ -360,9 +368,14 @@ public class MyVideoVIew extends ViewGroup{
                         vb = getHeight()*4/5;
                         break;
                     case 5:
-                        vl = getWidth() * 5 / 6;
-                        vt = x+getHeight()*4/5;
-                        vr = getWidth() - x;
+//                        vl = getWidth() * 5 / 6;
+//                        vt = x+getHeight()*4/5;
+//                        vr = getWidth() - x;
+//                        vb = getHeight();
+//                        break;
+                        vl = x;
+                        vt = x;
+                        vr = getWidth() * 5 / 6 - x;
                         vb = getHeight();
                         break;
                     default:
@@ -481,6 +494,22 @@ public class MyVideoVIew extends ViewGroup{
             mScreenList.get(i).init(mContext);
             mScreenList.get(i).updateView();
             mScreenList.get(i).setCtrlBtnSize(vr-vl,vb-vt);
+
+
+
+
+
+            localVideoView.layout(vl, vt, vr, vb);
+            localVideoView.bringToFront();
+
+
+
+
+
+
+
+
+
 
 
             if (i != 0 || display_mode.equals(DISPLAY_MODE.NOT_FULL_QUARTER)) {
@@ -603,6 +632,39 @@ public class MyVideoVIew extends ViewGroup{
     public ArrayList<VI> getVis() {
         return otherList;
     }
+
+    public void updateCamera(boolean isUvc)
+    {
+//        this.isUvcCamera = isUvc;
+        if(localVideoView!=null){
+            localVideoView.updateCamrea(isUvc);
+        }
+    }
+
+    public OpenGLTextureView getmLocalVideoCell() {
+        return localVideoView;
+    }
+
+    public void requestLocalFrame() {
+        handler.removeCallbacks(drawLocalVideoFrameRunnable);
+        requestLocalVideoRender();
+    }
+
+    private static final int CELL_VIDEO_PADDING = 15;
+
+    private void requestLocalVideoRender() {
+        if (getVisibility() == VISIBLE) {
+            handler.postDelayed(drawLocalVideoFrameRunnable, 1000 / CELL_VIDEO_PADDING);
+        }
+    }
+
+    private Runnable drawLocalVideoFrameRunnable = new Runnable() {
+        @Override
+        public void run() {
+            localVideoView.requestRender();
+            requestLocalVideoRender();
+        }
+    };
 
 //    public void setDisplayMode(DISPLAY_MODE displayMode){
 //        this.display_mode = displayMode;

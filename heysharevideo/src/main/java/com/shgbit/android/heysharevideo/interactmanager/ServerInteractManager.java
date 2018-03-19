@@ -54,9 +54,13 @@ import com.shgbit.android.heysharevideo.json.SyncPidInfo;
 import com.shgbit.android.heysharevideo.json.SystemConfig;
 import com.shgbit.android.heysharevideo.json.TimeoutInfo;
 import com.shgbit.android.heysharevideo.json.UpdateGroupInfo;
+import com.shgbit.android.heysharevideo.json.ValidateInfo;
 import com.shgbit.android.heysharevideo.json.XiaoYuConfig;
 import com.shgbit.android.heysharevideo.json.YunDesktop;
-import com.wa.util.WAJSONTool;
+import com.shgbit.android.heysharevideo.util.GBLog;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -76,7 +80,7 @@ public class ServerInteractManager {
 	
 	public enum INTERACTTYPE {LOGIN,LOGINOUT,CONTACTS,ONLINE,GFCUSER,CREATE,JOIN,INVITE,KICKOUT,QUITE,END,STARTYUN,ENDYUN,RESERVE
 		,DELETE,UPDATE,BUSY,CONFIG,MEETING,CHECKPWD,MOTIFYPWD,PFCUSER,CANCLEINVITE,SYNCPID,SENDMSG,CREATEGROUP,DELETEGROUP,UPDATEGROUP
-		,QUERYGROUP,ADDTOGROUP,DELEFRMGROUP,START,STOP}
+		,QUERYGROUP,ADDTOGROUP,DELEFRMGROUP,START,STOP,VALIDATE}
 
 	public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 	private OkHttpClient mOkHttpClient = new OkHttpClient.Builder().connectTimeout(10, TimeUnit.SECONDS).build();
@@ -621,6 +625,11 @@ public class ServerInteractManager {
 		new PostTask(url, new Gson().toJson(mr), INTERACTTYPE.STOP).execute();
 	}
 
+	public void validate (ValidateInfo vi) {
+		String url = "http://172.17.16.211:3000/pkg/permission";
+		new PostTask(url, new Gson().toJson(vi), INTERACTTYPE.VALIDATE).execute();
+	}
+
 	public static String getTimeStr2(long time) {
 		SimpleDateFormat sTimeSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA);
 		return sTimeSDF.format(time);
@@ -668,118 +677,212 @@ public class ServerInteractManager {
 					 
 					 try {
 						 String response = httpGet(url2);
-						 if (response != null && response.equals("") == false) {
-							 HeartBeatInfo hbi = WAJSONTool.parseObject(response, HeartBeatInfo.class);
-							 if (hbi != null) {
-								 if (hbi.getResult().equals("failed") == true) {
-									 Log.e(TAG, "heartbeat failed: " + response);
-								 }
-								 if (hbi.getHeartbeatEvents() != null && hbi.getHeartbeatEvents().length > 0) {
-									 ArrayList<RefuseInfo> refuselist = new ArrayList<RefuseInfo>();
-									 ArrayList<TimeoutInfo> timeoutlist = new ArrayList<TimeoutInfo>();
-									 for (HeartBeatEvents hbEvents : hbi.getHeartbeatEvents()) {
-										 if (hbEvents.getEventName().equalsIgnoreCase("meetingJoined")) {
-											 //user
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingBusied")) {
-											 refuselist.add(new Gson().fromJson(hbEvents.getEventParams(),RefuseInfo.class));
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingInvitingTimeout")) {
-											 timeoutlist.add(new Gson().fromJson(hbEvents.getEventParams(), TimeoutInfo.class));
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingInvited")) {
-											 if (hbEvents.getEventParams() != null) {
-												 mInvitedMeeting = new Gson().fromJson(hbEvents.getEventParams(), InvitedMeeting.class);
-												 if (mInvitedMeeting != null) {
-													 getMeeting(mInvitedMeeting.getMeetingId());
-												 }
-											 }
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("byKicking")) {
-											 
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingKickouted")) {
-											 //kickInfo
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingQuited")) {
-											 //user
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingEnded")) {
-											 //endmeeting
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("yunStarted")) {
-											 if (hbEvents.getEventParams() != null) {
-												 for (ServerInteractCallback callback : mInteractCallbacks) {
-													 if (callback == null) {
-														 continue;
-													 }
-													 callback.eventStartYunDesk(new Gson().fromJson(hbEvents.getEventParams(), YunDesktop.class));
-												 }
-											 }
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("yunEnded")) {
-											 for (ServerInteractCallback callback : mInteractCallbacks) {
-												 if (callback == null) {
-													 continue;
-												 }
-												 callback.eventEndYunDesk();
-											 }
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("whiteStarted")) {
-											 if (hbEvents.getEventParams() != null) {
-												 for (ServerInteractCallback callback : mInteractCallbacks) {
-													 if (callback == null) {
-														 continue;
-													 }
-													 callback.eventStartWhiteBoard();
-												 }
-											 }
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("whiteEnded")) {
-											 if (hbEvents.getEventParams() != null) {
-												 for (ServerInteractCallback callback : mInteractCallbacks) {
-													 if (callback == null) {
-														 continue;
-													 }
-													 callback.eventEndWhiteBoard();
-												 }
-											 }
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("fileResultNoted")) {
-											 //fileResultInfo
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("onlineChange")) {
-//											 getContacts();
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("differentPlaceLogin")) {
-											 if (hbEvents.getEventParams() != null) {
-												 for (ServerInteractCallback callback : mInteractCallbacks) {
-													 if (callback == null) {
-														 continue;
-													 }
-													 callback.eventDifferentPlaceLogin();
-												 }
-											 }
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingInvitingTimeout")) {
-											 
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingChanged")) {
-											 
-										 } else if (hbEvents.getEventName().equalsIgnoreCase("invitingCancel")) {
-											 if (hbEvents.getEventParams() != null) {
-												 for (ServerInteractCallback callback : mInteractCallbacks) {
-													 if (callback == null) {
-														 continue;
-													 }
-													 callback.eventInvitingCancle(new Gson().fromJson(hbEvents.getEventParams(), InviteCancledInfo.class));
-												 }
-											 }
+						 JSONObject jsonObject = new JSONObject(response);
+						 if (jsonObject.has("heartbeatEvents")) {
+							 JSONArray jsonArray = jsonObject.getJSONArray("heartbeatEvents");
+							 if (jsonArray != null) {
+								 ArrayList<RefuseInfo> refuselist = new ArrayList<RefuseInfo>();
+								 ArrayList<TimeoutInfo> timeoutlist = new ArrayList<TimeoutInfo>();
+							 	for (int i = 0; i < jsonArray.length(); i++) {
+									if (jsonArray.getJSONObject(i).has("eventName") == false) {
+										continue;
+									}
+									String eventName = jsonArray.getJSONObject(i).getString("eventName");
+
+									if (eventName.equalsIgnoreCase("meetingJoined")) {
+
+									} else if (eventName.equalsIgnoreCase("meetingBusied")) {
+										refuselist.add(new Gson().fromJson(jsonArray.getJSONObject(i).getString("eventParams"),RefuseInfo.class));
+									} else if (eventName.equalsIgnoreCase("meetingInvitingTimeout")) {
+										timeoutlist.add(new Gson().fromJson(jsonArray.getJSONObject(i).getString("eventParams"), TimeoutInfo.class));
+									} else if (eventName.equalsIgnoreCase("meetingInvited")) {
+										mInvitedMeeting = new Gson().fromJson(jsonArray.getJSONObject(i).getString("eventParams"), InvitedMeeting.class);
+										GBLog.e(TAG, "####" + mInvitedMeeting.getMeetingId());
+										if (mInvitedMeeting != null) {
+											getMeeting(mInvitedMeeting.getMeetingId());
+										}
+									} else if (eventName.equalsIgnoreCase("byKicking")) {
+
+									} else if (eventName.equalsIgnoreCase("meetingKickouted")) {
+
+									} else if (eventName.equalsIgnoreCase("meetingQuited")) {
+
+									} else if (eventName.equalsIgnoreCase("meetingEnded")) {
+
+									} else if (eventName.equalsIgnoreCase("yunStarted")) {
+
+									} else if (eventName.equalsIgnoreCase("yunEnded")) {
+
+									} else if (eventName.equalsIgnoreCase("whiteStarted")) {
+
+									} else if (eventName.equalsIgnoreCase("whiteEnded")) {
+
+									} else if (eventName.equalsIgnoreCase("fileResultNoted")) {
+
+									} else if (eventName.equalsIgnoreCase("onlineChange")) {
+
+									} else if (eventName.equalsIgnoreCase("differentPlaceLogin")) {
+										if (mInteractCallbacks != null) {
+											for (ServerInteractCallback callback : mInteractCallbacks) {
+												if (callback == null) {
+													continue;
+												}
+												callback.eventDifferentPlaceLogin();
+											}
+										}
+									} else if (eventName.equalsIgnoreCase("meetingInvitingTimeout")) {
+
+									} else if (eventName.equalsIgnoreCase("meetingChanged")) {
+
+									} else if (eventName.equalsIgnoreCase("invitingCancel")) {
+										if (mInteractCallbacks != null) {
+											for (ServerInteractCallback callback : mInteractCallbacks) {
+												if (callback == null) {
+													continue;
+												}
+												callback.eventInvitingCancle(new Gson().fromJson(jsonArray.getJSONObject(i).getString("eventParams"), InviteCancledInfo.class));
+											}
+										}
+									}
+
+									if (jsonArray.getJSONObject(i).has("timeStamp")) {
+										timeStamp = jsonArray.getJSONObject(i).getLong("timeStamp");
+									}
+								}
+
+								 if (refuselist.size() > 0 || timeoutlist.size() > 0) {
+									 for (ServerInteractCallback callback : mInteractCallbacks) {
+										 if (callback == null) {
+											 continue;
 										 }
-										 timeStamp = hbEvents.getTimeStamp();
-									 }
-									 
-									 if (refuselist.size() > 0 || timeoutlist.size() > 0) {
-										 for (ServerInteractCallback callback : mInteractCallbacks) {
-											 if (callback == null) {
-												 continue;
-											 }
-											 callback.eventUserStateChanged(refuselist.toArray(new RefuseInfo[0]), timeoutlist.toArray(new TimeoutInfo[0]));
-										 }
+										 callback.eventUserStateChanged(refuselist.toArray(new RefuseInfo[0]), timeoutlist.toArray(new TimeoutInfo[0]));
 									 }
 								 }
 							 }
 						 }
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//						 if (response != null && response.equals("") == false) {
+//							 HeartBeatInfo hbi = new Gson().fromJson(response, HeartBeatInfo.class);
+//							 if (hbi != null) {
+//								 if (hbi.getResult().equals("failed") == true) {
+//									 Log.e(TAG, "heartbeat failed: " + response);
+//								 }
+//								 if (hbi.getHeartbeatEvents() != null && hbi.getHeartbeatEvents().length > 0) {
+//									 ArrayList<RefuseInfo> refuselist = new ArrayList<RefuseInfo>();
+//									 ArrayList<TimeoutInfo> timeoutlist = new ArrayList<TimeoutInfo>();
+//									 for (HeartBeatEvents hbEvents : hbi.getHeartbeatEvents()) {
+//										 if (hbEvents.getEventName().equalsIgnoreCase("meetingJoined")) {
+//											 //user
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingBusied")) {
+////											 refuselist.add(new Gson().fromJson(hbEvents.getEventParams(),RefuseInfo.class));
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingInvitingTimeout")) {
+////											 timeoutlist.add(new Gson().fromJson(hbEvents.getEventParams(), TimeoutInfo.class));
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingInvited")) {
+//											 if (hbEvents.getEventParams() != null) {
+////												 mInvitedMeeting = new Gson().fromJson(hbEvents.getEventParams(), InvitedMeeting.class);
+//												 if (mInvitedMeeting != null) {
+//													 getMeeting(mInvitedMeeting.getMeetingId());
+//												 }
+//											 }
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("byKicking")) {
+//
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingKickouted")) {
+//											 //kickInfo
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingQuited")) {
+//											 //user
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingEnded")) {
+//											 //endmeeting
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("yunStarted")) {
+//											 if (hbEvents.getEventParams() != null) {
+//												 for (ServerInteractCallback callback : mInteractCallbacks) {
+//													 if (callback == null) {
+//														 continue;
+//													 }
+////													 callback.eventStartYunDesk(new Gson().fromJson(hbEvents.getEventParams(), YunDesktop.class));
+//												 }
+//											 }
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("yunEnded")) {
+//											 for (ServerInteractCallback callback : mInteractCallbacks) {
+//												 if (callback == null) {
+//													 continue;
+//												 }
+//												 callback.eventEndYunDesk();
+//											 }
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("whiteStarted")) {
+//											 if (hbEvents.getEventParams() != null) {
+//												 for (ServerInteractCallback callback : mInteractCallbacks) {
+//													 if (callback == null) {
+//														 continue;
+//													 }
+//													 callback.eventStartWhiteBoard();
+//												 }
+//											 }
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("whiteEnded")) {
+//											 if (hbEvents.getEventParams() != null) {
+//												 for (ServerInteractCallback callback : mInteractCallbacks) {
+//													 if (callback == null) {
+//														 continue;
+//													 }
+//													 callback.eventEndWhiteBoard();
+//												 }
+//											 }
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("fileResultNoted")) {
+//											 //fileResultInfo
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("onlineChange")) {
+////											 getContacts();
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("differentPlaceLogin")) {
+//											 if (hbEvents.getEventParams() != null) {
+//												 for (ServerInteractCallback callback : mInteractCallbacks) {
+//													 if (callback == null) {
+//														 continue;
+//													 }
+//													 callback.eventDifferentPlaceLogin();
+//												 }
+//											 }
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingInvitingTimeout")) {
+//
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("meetingChanged")) {
+//
+//										 } else if (hbEvents.getEventName().equalsIgnoreCase("invitingCancel")) {
+//											 if (hbEvents.getEventParams() != null) {
+//												 for (ServerInteractCallback callback : mInteractCallbacks) {
+//													 if (callback == null) {
+//														 continue;
+//													 }
+////													 callback.eventInvitingCancle(new Gson().fromJson(hbEvents.getEventParams(), InviteCancledInfo.class));
+//												 }
+//											 }
+//										 }
+//										 timeStamp = hbEvents.getTimeStamp();
+//									 }
+//
+//									 if (refuselist.size() > 0 || timeoutlist.size() > 0) {
+//										 for (ServerInteractCallback callback : mInteractCallbacks) {
+//											 if (callback == null) {
+//												 continue;
+//											 }
+//											 callback.eventUserStateChanged(refuselist.toArray(new RefuseInfo[0]), timeoutlist.toArray(new TimeoutInfo[0]));
+//										 }
+//									 }
+//								 }
+//							 }
+//						 }
 					 } catch (Throwable e) {
 						 Log.e(TAG, "HeartBeatThread Throwable1:" + e.toString());
 					 }
 					 
 					 getOnline();
-					 //getContactUser(SystemParams.getSessionId());
 					 
 					 mIsFinishHeartbeat = false;
 					for (int i = 0; i < 10; i++) {
@@ -1452,6 +1555,30 @@ public class ServerInteractManager {
 								continue;
 							}
 							callback.endRecord(true, "");
+						}
+					}
+					break;
+				case VALIDATE:
+					Result result3 = null;
+					try {
+						result3 = new Gson().fromJson(result, Result.class);
+					} catch (Throwable e) {
+						Log.e(TAG, "parse Result Throwable: " + e.toString());
+					}
+
+					if (result3 == null || result3.getResult().equalsIgnoreCase("false") == true) {
+						for (ServerInteractCallback callback : mInteractCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.onValidate(false, result3 == null?"unknow error":result3.getFailedMessage());
+						}
+					} else {
+						for (ServerInteractCallback callback : mInteractCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.onValidate(true, "");
 						}
 					}
 					break;

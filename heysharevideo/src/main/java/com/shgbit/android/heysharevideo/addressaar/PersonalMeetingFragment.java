@@ -53,6 +53,7 @@ public class PersonalMeetingFragment extends Fragment {
 	private boolean isSuccess = false;
 	private boolean isPause=false;
 	private boolean isBack = false;
+	private String LoginName;
 	private InternalCallBack mInCallBack;
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -173,11 +174,13 @@ public class PersonalMeetingFragment extends Fragment {
 		 }
 	}
 	
-	public void setMeetingData(User[] user, UserOrganization userOrganization,InternalCallBack mInCallBack) {
-		if (user == null && userOrganization==null) {
+	public void setMeetingData(User[] user, UserOrganization userOrganization, String name,InternalCallBack mInCallBack) {
+		if (user == null && userOrganization==null ) {
 			return;
 		}
 		mUsers =user;
+
+		LoginName = name;
 
 		mPerson =userOrganization;
 
@@ -297,7 +300,7 @@ public class PersonalMeetingFragment extends Fragment {
 									intent.putExtra("number",meeting.getMeetingId());
 									intent.putExtra("password",meeting.getPassword());
 									intent.putExtra("meetingName",meeting.getMeetingName());
-									intent.putExtra("username","xumeng");
+									intent.putExtra("username",LoginName);
 									getActivity().startActivity(intent);
 									mIsFinishHeartbeat = true;
 									getActivity().getSupportFragmentManager().popBackStack();

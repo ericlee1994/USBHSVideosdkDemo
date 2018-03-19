@@ -6,7 +6,6 @@ import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager;
@@ -59,33 +58,45 @@ public class Syntony {
     private List<UserOrganization> mContactList;
     private String[] mUsers;
     private boolean ispersonal;
-    private Toast mToast;
 
-    public static Syntony getInstance () {
-        if (mSyntony == null) {
-            mSyntony = new Syntony();
-        }
-        return mSyntony;
-    }
+//    public static Syntony getInstance () {
+//        if (mSyntony == null) {
+//            mSyntony = new Syntony();
+//        }
+//        return mSyntony;
+//    }
 
     public StructureDataCollector.ContactsUpdateListener mCUpdateListener = new StructureDataCollector.ContactsUpdateListener() {
 
         @Override
         public void onContactsUpdate() {
             if (mHandler != null) {
-                mHandler.sendEmptyMessage(MESSAGE);
+                mHandler.sendEmptyMessage(MESSAGE_1);
+            }
+        }
+
+        @Override
+        public void onGroupUpdate() {
+            if (mHandler != null) {
+                mHandler.sendEmptyMessage(MESSAGE_2);
             }
         }
     };
 
-    private final int MESSAGE = 0x005;
+    private final int MESSAGE_1 = 0x005;
+    private final int MESSAGE_2 = 0x006;
     private Handler mHandler = new Handler(){
 
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MESSAGE:
+                case MESSAGE_1:
                     mFUsers = StructureDataCollector.getInstance().getContact();
+                    break;
+                case MESSAGE_2:
+                    if(mGroupFrag != null){
+                        mGroupFrag.setListener();
+                    }
                     break;
                 default:
                     break;
@@ -94,8 +105,8 @@ public class Syntony {
         }};
 
 
-    public void init(Context c, int id, int id2,String name){
-        mContext = c.getApplicationContext();
+    public void init(Context c, int id, int id2, String name){
+        mContext = c;
         mBackgroundId = id;
         mBackgroundId2 = id2;
         LoginName = name;
@@ -237,27 +248,17 @@ public class Syntony {
         public void eventInvitingCancle(InviteCancledInfo ici) {
 
         }
+
+        @Override
+        public void onValidate(boolean result, String err) {
+
+        }
     };
 
     public void des () {
         Log.e(TAG, "############des");
         ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mAllAddressListFrag).commit();
     }
-//
-//    public void des2(){
-//        Log.e(TAG, "############des2");
-//        ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mPersonalAddressListFrag).commit();
-//    }
-//
-//    public void des3(){
-//        Log.e(TAG, "############des3");
-//        ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mPersonalMeetingFrag).commit();
-//    }
-//
-//    public void des4(){
-//        Log.e(TAG, "############des4");
-//        ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mMeetingAllAddressListFrag).commit();
-//    }
 
     private void ChangeFragment(int index,Object object){
         FragmentTransaction transaction = ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction();
@@ -273,8 +274,8 @@ public class Syntony {
             transaction.replace(mBackgroundId2, mPersonalAddressListFrag).addToBackStack(null).commit();
         }else if(index == 2){
             mPersonalMeetingFrag = new PersonalMeetingFragment();
-            mPersonalMeetingFrag.setMeetingData((User[]) object, mPerson,mInCallBack);
-            transaction.replace(mBackgroundId2, mPersonalMeetingFrag).addToBackStack(null).commit();
+            mPersonalMeetingFrag.setMeetingData((User[]) object, mPerson,LoginName,mInCallBack);
+            transaction.add(mBackgroundId2, mPersonalMeetingFrag).addToBackStack(null).commit();
         }else if(index == 3){
             mGroupFrag = new GroupFragment();
             mGroupFrag.setGroupFrag(name,mGroup,mContactList,normal,mSelectUsers,ScreenType,LoginName,mInCallBack);
@@ -442,15 +443,13 @@ public class Syntony {
         }
     }
 
-
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+    public void destroy(){
         if (mHandler != null) {
-            mHandler.removeMessages(MESSAGE);
+            mHandler.removeMessages(MESSAGE_1);
+            mHandler.removeMessages(MESSAGE_2);
             mHandler = null;
         }
-
+        mContext = null;
+        ServerInteractManager.getInstance().removeServerInteractCallback(mInteractCallback);
     }
 }
