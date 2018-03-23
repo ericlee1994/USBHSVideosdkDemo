@@ -84,6 +84,7 @@ public class MeetingInfoManager {
 	private boolean isMemberContent;
 	private boolean isPicShare;
 	private boolean isNotFirst;
+	private boolean isUvc;
 
 	private DISPLAY_MODE DisplayMode;
 
@@ -406,6 +407,9 @@ public class MeetingInfoManager {
 							m.setNet_status(MemberInfo.NET_STATUS.Lost);
 							if (item.getUserName().equals(Common.USERNAME)) {
 								m.setLocal(true);
+								if (isUvc){
+									m.setUvc(true);
+								}
 							}
 
 							mServerData.add(m);
@@ -423,6 +427,9 @@ public class MeetingInfoManager {
 							m.setNet_status(MemberInfo.NET_STATUS.Lost);
 							if (item.getUserName().equals(Common.USERNAME)) {
 								m.setLocal(true);
+								if (isUvc){
+									m.setUvc(true);
+								}
 							}
 
 							mServerData.add(m);
@@ -440,6 +447,9 @@ public class MeetingInfoManager {
 							m.setNet_status(MemberInfo.NET_STATUS.Lost);
 							if (item.getUserName().equals(Common.USERNAME)) {
 								m.setLocal(true);
+								if (isUvc){
+									m.setUvc(true);
+								}
 							}
 
 							mServerData.add(m);
@@ -572,6 +582,9 @@ public class MeetingInfoManager {
 			m.setAudioMute(false);
 			m.setVideoMute(false);
 			m.setSessionType(changeToSessionType("mobile"));
+			if (isUvc){
+				m.setUvc(true);
+			}
 
 			mNemoData.add(m);
 			ArrayList<String> ids = new ArrayList<>();
@@ -634,6 +647,7 @@ public class MeetingInfoManager {
 				} else {
 					MemberInfo s = result.get(index);
 					s.setLocal(n.isLocal());
+					s.setUvc(n.isUvc());
 					s.setAudioMute(n.isAudioMute());
 					s.setContent(n.isContent());
 					s.setDataSourceID(n.getDataSourceID());
@@ -1125,6 +1139,23 @@ public class MeetingInfoManager {
 						}
 					}
 
+				} else if (cmd.getName().equals(Cmd.LocalChange)) {
+					for (int i = 0; i < mScreenMember.size(); i++) {
+						if (mScreenMember.get(i).isLocal()) {
+							mScreenMember.get(i).setUvc((Boolean) args[0]);
+							needUpdate = true;
+							break;
+						}
+					}
+
+					for (int i = 0; i < mOtherMember.size(); i++) {
+						if (mOtherMember.get(i).isLocal()) {
+							mOtherMember.get(i).setUvc((Boolean) args[0]);
+							needUpdate = true;
+							break;
+						}
+					}
+
 				}
 			} catch (Throwable e) {
 				GBLog.e(TAG, "OperateCommand Exception=" + VCUtils.CaughtException(e));
@@ -1191,7 +1222,8 @@ public class MeetingInfoManager {
 					isMemberContent = true;
 				}
 				GBLog.i(TAG, "mScreen = " + i + " ,Id=" + item.getId() + " ,Status=" + item.getStatus() + ",sessionType=" + item.getSessionType() + ",Displayname=" + item.getDisplayName() + ",NET_STATUS=" + item.getNet_status() + ",DataSourceId=" + item.getDataSourceID() + ",DisplayType=" + item.getmDisplayType() + ",resId=" + item.getResId());
-				GBLog.e(TAG, "CallBack-CtrlStatus-Screen = " + new Gson().toJson(item.getStatusCtrl()));
+//				GBLog.e(TAG, "CallBack-CtrlStatus-Screen = " + new Gson().toJson(item.getStatusCtrl()));
+				GBLog.i(TAG, "CallBack-Screen-Uvc = " + item.isUvc());
 			}
 			for (int i = 0; i < mOtherMember.size(); i++) {
 				MemberInfo item = mOtherMember.get(i);
@@ -1199,6 +1231,7 @@ public class MeetingInfoManager {
 					isMemberContent = true;
 				}
 				GBLog.i(TAG, "mOther = " + i + " ,Id=" + item.getId() + " ,Status=" + item.getStatus() + ",sessionType=" + item.getSessionType() + ",NET_STATUS=" + item.getNet_status() + ",DataSourceId=" + item.getDataSourceID());
+				GBLog.i(TAG, "CallBack-other-Uvc = " + item.isUvc());
 			}
 			GBLog.i(TAG, "----------------- ");
 			for (int i = 0; i < mUnjoinedMember.size(); i++) {
@@ -1377,6 +1410,19 @@ public class MeetingInfoManager {
 		mCommand.add(cmd);
 	}
 
+	//isUvc为true：USB摄像头
+	public void LocalChange(boolean isUvc) {
+		GBLog.i(TAG, "***LocalChange***,isUvc=" + isUvc);
+		this.isUvc = isUvc;
+		Command cmd = new Command();
+		cmd.setName(Cmd.LocalChange);
+		Object[] args = new Object[1];
+		args[0] = isUvc;
+		cmd.setArgs(args);
+
+		mCommand.add(cmd);
+	}
+
 	private void getModeList() {
 		mTotalMember.clear();
 
@@ -1528,6 +1574,11 @@ public class MeetingInfoManager {
 
 			if (info.isLocal() != newInfo.isLocal()) {
 				info.setLocal(newInfo.isLocal());
+				needUpdate = true;
+			}
+
+			if (info.isUvc() != newInfo.isUvc()) {
+				info.setUvc(newInfo.isUvc());
 				needUpdate = true;
 			}
 

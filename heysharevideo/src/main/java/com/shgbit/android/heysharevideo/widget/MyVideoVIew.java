@@ -27,6 +27,7 @@ import java.util.List;
 
 /**
  * Created by Eric on 2017/7/19.
+ * @author Eric
  */
 
 public class MyVideoVIew extends ViewGroup{
@@ -46,6 +47,7 @@ public class MyVideoVIew extends ViewGroup{
 
     private boolean isInVoiceMode = false;
     private boolean isFirstPIP = false;
+    private boolean hasDataChanged = false;
     public static boolean isMove = true;
     private int flag = 0;
 
@@ -97,10 +99,10 @@ public class MyVideoVIew extends ViewGroup{
             mScreenList.add(viewLayout);
         }
 
-        localVideoView = new OpenGLTextureView(getContext(),true);
-        localVideoView.setSourceID(NemoSDK.getInstance().getLocalVideoStreamID());
-        localVideoView.setContent(false);
-        addView(localVideoView);
+//        localVideoView = new OpenGLTextureView(getContext(),true);
+//        localVideoView.setSourceID(NemoSDK.getInstance().getLocalVideoStreamID());
+//        localVideoView.setContent(false);
+//        addView(localVideoView);
     }
 
     public void offLocalVoice(boolean hasVoice){
@@ -244,10 +246,13 @@ public class MyVideoVIew extends ViewGroup{
 //                        } else {
 //                            mScreenList.get(i).endPizhu();
 //                        }
+
+
                     }
 
                     requestLayout();
                     requestRender();
+                    hasDataChanged = true;
                     break;
                 case UPDATEOTHER:
                     List<MemberInfo> mOther = (List<MemberInfo>) msg.obj;
@@ -329,7 +334,7 @@ public class MyVideoVIew extends ViewGroup{
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        for (int i = 1; i < mScreenList.size(); i++) {
+        for (int i = 0; i < mScreenList.size(); i++) {
             if (mScreenList.get(i) == null && mScreenList.get(i).getVideoCellView() != null) {
                 continue;
             }
@@ -368,16 +373,16 @@ public class MyVideoVIew extends ViewGroup{
                         vb = getHeight()*4/5;
                         break;
                     case 5:
-//                        vl = getWidth() * 5 / 6;
-//                        vt = x+getHeight()*4/5;
-//                        vr = getWidth() - x;
-//                        vb = getHeight();
-//                        break;
-                        vl = x;
-                        vt = x;
-                        vr = getWidth() * 5 / 6 - x;
+                        vl = getWidth() * 5 / 6;
+                        vt = x+getHeight()*4/5;
+                        vr = getWidth() - x;
                         vb = getHeight();
                         break;
+//                        vl = x;
+//                        vt = x;
+//                        vr = getWidth() * 5 / 6 - x;
+//                        vb = getHeight();
+//                        break;
                     default:
                         break;
                 }
@@ -495,22 +500,15 @@ public class MyVideoVIew extends ViewGroup{
             mScreenList.get(i).updateView();
             mScreenList.get(i).setCtrlBtnSize(vr-vl,vb-vt);
 
-
-
-
-
-            localVideoView.layout(vl, vt, vr, vb);
-            localVideoView.bringToFront();
-
-
-
-
-
-
-
-
-
-
+            if (mScreenList.get(i).getVideoInfo() != null) {
+                if (hasDataChanged && mScreenList.get(i).getVideoInfo().isLocal()) {
+                    GBLog.e(TAG, "set localVideoView !!!");
+                    localVideoView = null;
+                    localVideoView = mScreenList.get(i).getVideoCellView();
+                    hasDataChanged = false;
+                    iVideoViewCallBack.receiveLocal();
+                }
+            }
 
             if (i != 0 || display_mode.equals(DISPLAY_MODE.NOT_FULL_QUARTER)) {
                 mScreenList.get(i).setOnClickListener(mOnClickListener);
@@ -591,7 +589,7 @@ public class MyVideoVIew extends ViewGroup{
                     if (mScreenList.get(i).getVideoInfo() == null) {
                         continue;
                     }
-                    if (mScreenList.get(i).getVideoCellView() != null) {
+                    if (mScreenList.get(i).getVideoCellView() != null && !mScreenList.get(i).getVideoInfo().isLocal()){
                         mScreenList.get(i).getVideoCellView().requestRender();
                     }
                 }
@@ -635,9 +633,14 @@ public class MyVideoVIew extends ViewGroup{
 
     public void updateCamera(boolean isUvc)
     {
-//        this.isUvcCamera = isUvc;
-        if(localVideoView!=null){
-            localVideoView.updateCamrea(isUvc);
+
+        for (int i = 0; i < mScreenList.size(); i++) {
+            if (mScreenList.get(i).getVideoInfo() != null) {
+                if (mScreenList.get(i).getVideoInfo().isLocal()) {
+                    mScreenList.get(i).getVideoCellView().updateCamrea(isUvc);
+                    break;
+                }
+            }
         }
     }
 
@@ -650,18 +653,18 @@ public class MyVideoVIew extends ViewGroup{
         requestLocalVideoRender();
     }
 
-    private static final int CELL_VIDEO_PADDING = 15;
-
     private void requestLocalVideoRender() {
         if (getVisibility() == VISIBLE) {
-            handler.postDelayed(drawLocalVideoFrameRunnable, 1000 / CELL_VIDEO_PADDING);
+            handler.postDelayed(drawLocalVideoFrameRunnable, 1000 / 15);
         }
     }
 
     private Runnable drawLocalVideoFrameRunnable = new Runnable() {
         @Override
         public void run() {
-            localVideoView.requestRender();
+            if (localVideoView != null) {
+                localVideoView.requestRender();
+            }
             requestLocalVideoRender();
         }
     };

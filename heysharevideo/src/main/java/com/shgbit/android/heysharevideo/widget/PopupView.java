@@ -198,8 +198,8 @@ public class PopupView extends LinearLayout implements IVideoRecordCallBack {
         mJoinTextView.setText(getResources().getString(R.string.popup_joined));
         mRefuseTextView.setText(getResources().getString(R.string.popup_refuse));
 
-        mJoinTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENHEIGHT / 40);
-        mRefuseTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENHEIGHT / 40);
+        mJoinTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH / 40);
+        mRefuseTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH / 40);
 
         VideoRecord.getInstance(mContext).setCallBack(this);
         VideoRecord.getInstance(mContext).startQueryStatusThread();

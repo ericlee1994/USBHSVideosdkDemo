@@ -43,7 +43,7 @@ import org.xutils.x;
 public class CellView extends FrameLayout {
     private static final String TAG = "CellView";
 
-    private VideoCellView videoCellView;
+    public VideoCellView videoCellView;
     private View picView;
     private View ctrlView;
 
@@ -149,6 +149,7 @@ public class CellView extends FrameLayout {
         this.vi = v;
     }
 
+
     public String getPicturePage () {
         return ""+mCur;
     }
@@ -222,7 +223,7 @@ public class CellView extends FrameLayout {
         }
         isNeedInit = false;
 
-        videoCellView  = new VideoCellView(context);
+        videoCellView  = new VideoCellView(context, false);
         addView(videoCellView);
 
         picView = LayoutInflater.from(context).inflate(R.layout.picture, null);

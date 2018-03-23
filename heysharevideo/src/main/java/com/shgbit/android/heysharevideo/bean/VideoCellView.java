@@ -16,6 +16,10 @@ public class VideoCellView extends OpenGLTextureView {
         super(context, attrs);
     }
 
+    public VideoCellView(Context context, boolean isUvc){
+        super(context, isUvc);
+    }
+
     public void setParticipantId(int participantId) {
         this.participantId = participantId;
     }

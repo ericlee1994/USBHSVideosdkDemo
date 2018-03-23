@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null){
-                        meetingNumber = "910081365610";
+                        meetingNumber = "910031515193";
                     }else {
                         meetingNumber = editText.getText().toString();
                     }
@@ -45,7 +45,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         editText = findViewById(R.id.meetingid);
-
+        // http://121.43.162.79:4005"
+        // http://www.shgbitcloud.com:4000
         HSVideoSDK.getInstance().init("http://121.43.162.79:4005", "lizheng", this,
                 new HSSDKListener() {
                     @Override

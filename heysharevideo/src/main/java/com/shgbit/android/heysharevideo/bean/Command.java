@@ -3,7 +3,7 @@ package com.shgbit.android.heysharevideo.bean;
 public class Command {
 	
 	public enum Cmd {
-		Exchange, PopUp, PopDown, AudioMute, VideoMute, StateChange, ModeChange, GetUnjoinedInfo,PopUpDown,ModeVoice,PicShare,CommentStart,CommentEnd,CommentModeChange
+		Exchange, PopUp, PopDown, AudioMute, VideoMute, StateChange, ModeChange, GetUnjoinedInfo,PopUpDown,ModeVoice,PicShare,CommentStart,CommentEnd,CommentModeChange,LocalChange
 	}
 
 	private Cmd name;

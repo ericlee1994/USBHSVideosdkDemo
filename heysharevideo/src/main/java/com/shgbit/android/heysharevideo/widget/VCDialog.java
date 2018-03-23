@@ -100,12 +100,12 @@ public class VCDialog extends Dialog{
 	
 	@Override
 	public void show() {
-//		if (mType == DialogType.Invite) {
+		if (mType == DialogType.Invite) {
 //			if (VCNotification.isBackground(mContext) == false) {
-//				initMediaPlayer();
+				initMediaPlayer();
 //			}
-//			mHandler.sendEmptyMessageDelayed(0x222, 30 * 1000);
-//		}
+			mHandler.sendEmptyMessageDelayed(0x222, 30 * 1000);
+		}
 		super.show();
 	}
 	
@@ -286,7 +286,7 @@ public class VCDialog extends Dialog{
 		private void initMediaPlayer() {
 			try {
 				if (mMediaPlayer == null) {
-//					mMediaPlayer = MediaPlayer.create(mContext, R.raw.invitesound);
+					mMediaPlayer = MediaPlayer.create(mContext, R.raw.invitesound);
 				}
 
 				mMediaPlayer.start();

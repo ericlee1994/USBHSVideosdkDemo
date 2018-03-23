@@ -45,6 +45,7 @@ public class MemberInfo {
 	private StatusCtrl statusCtrl;
 
 	private CtrlStatus ctrlStatus;
+	private boolean isUvc;
 
 	public enum CTRL_STATUS{
 		NULL,
@@ -87,6 +88,7 @@ public class MemberInfo {
 		resId = null;
 		isComment = false;
 		ctrlStatus = null;
+		isUvc = false;
 	}
 
 	public MemberInfo(MemberInfo info) {
@@ -111,6 +113,7 @@ public class MemberInfo {
 		isComment = info.isComment();
 		ctrlStatus = info.getCtrlStatus();
 		statusCtrl = info.getStatusCtrl();
+		isUvc = info.isUvc();
 	}
 
 	public String getId() {
@@ -279,6 +282,14 @@ public class MemberInfo {
 
 	public void setStatusCtrl(StatusCtrl statusCtrl) {
 		this.statusCtrl = statusCtrl;
+	}
+
+	public boolean isUvc() {
+		return isUvc;
+	}
+
+	public void setUvc(boolean uvc) {
+		isUvc = uvc;
 	}
 
 	public String toString() {
