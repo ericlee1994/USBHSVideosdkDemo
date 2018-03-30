@@ -268,10 +268,10 @@ public class Syntony {
             mAllAddressListFrag.setLoginName(LoginName);
             transaction.replace(mBackgroundId, mAllAddressListFrag).commit();
             mAllAddressListFrag.setInCallBack(mInCallBack);
-        }else if(index ==1){
+        }else if(index == 1){
             mPersonalAddressListFrag = new PersonalAddressListFragment();
             mPersonalAddressListFrag.setOrgData((UserOrganization) object,LoginName,mInCallBack);
-            transaction.replace(mBackgroundId2, mPersonalAddressListFrag).addToBackStack(null).commit();
+            transaction.add(mBackgroundId2, mPersonalAddressListFrag).addToBackStack(null).commit();
         }else if(index == 2){
             mPersonalMeetingFrag = new PersonalMeetingFragment();
             mPersonalMeetingFrag.setMeetingData((User[]) object, mPerson,LoginName,mInCallBack);
@@ -378,6 +378,11 @@ public class Syntony {
       }
 
       @Override
+      public void onDesFragment() {
+          ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mAllAddressListFrag).commit();
+      }
+
+      @Override
       public void onInvitedUsers(User[] users, boolean isPersonal) {
           ispersonal = isPersonal;
           ArrayList arrayList = new ArrayList();
@@ -449,7 +454,21 @@ public class Syntony {
             mHandler.removeMessages(MESSAGE_2);
             mHandler = null;
         }
-        mContext = null;
+
         ServerInteractManager.getInstance().removeServerInteractCallback(mInteractCallback);
+        FragmentTransaction transaction = ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction();
+        transaction.remove(mAllAddressListFrag);
+        transaction.remove(mPersonalAddressListFrag);
+        transaction.remove(mPersonalMeetingFrag);
+        transaction.remove(mMeetingAllAddressListFrag);
+        transaction.remove(mGroupFrag);
+        mContext = null;
+        mPersonalMeetingFrag = null;
+        mGroupFrag = null;
+        mAllAddressListFrag = null;
+        mMeetingAllAddressListFrag = null;
+        mPersonalAddressListFrag = null;
+        ServerInteractManager.getInstance().removeServerInteractCallback(mInteractCallback);
+
     }
 }

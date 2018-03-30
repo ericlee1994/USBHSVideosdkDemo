@@ -6,11 +6,11 @@ import android.os.SystemClock;
 
 import com.google.gson.Gson;
 import com.shgbit.android.heysharevideo.bean.CurrentMeetingInfo;
-import com.shgbit.android.heysharevideo.bean.Meeting;
 import com.shgbit.android.heysharevideo.bean.MeetingRecord;
 import com.shgbit.android.heysharevideo.callback.IVideoRecordCallBack;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager;
 import com.shgbit.android.heysharevideo.interactmanager.ServerRecordCallback;
+import com.shgbit.android.heysharevideo.json.Meeting;
 import com.shgbit.android.heysharevideo.util.Common;
 import com.shgbit.android.heysharevideo.util.GBLog;
 import com.shgbit.android.heysharevideo.util.VCUtils;

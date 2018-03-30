@@ -19,6 +19,7 @@ public interface InternalCallBack {
     void onGroupAddMember(Group group1);
     void onGroupUsers();
     void onUpdataGroup();
+    void onDesFragment();
     void onInvitedUsers(User[] users,boolean isPersonal);
     void onGroupFragment(Group group, List<UserOrganization> userOrganizations, boolean isMeeting, List<UserOrganization> selectUsers, String type);
 }

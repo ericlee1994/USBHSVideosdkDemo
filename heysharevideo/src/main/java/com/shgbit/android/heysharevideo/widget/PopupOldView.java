@@ -209,6 +209,32 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
         mImageMode.setOnClickListener(mClickListener);
         mImageVoice.setOnClickListener(mClickListener);
         mImageMic.setOnClickListener(mClickListener);
+
+        if (MicStatus == false) {
+            mImageMic.setImageResource(R.drawable.btn_mic_pre);
+        } else {
+            mImageMic.setImageResource(R.drawable.btn_mic);
+        }
+
+        if (ModeStatus == false) {
+            mImageMode.setImageResource(R.drawable.btn_mode);
+        } else {
+            mImageMode.setImageResource(R.drawable.btn_mode_pre);
+        }
+
+        if(VoiceMode == false){
+            mImageVoice.setImageResource(R.drawable.btn_speech);
+            mImageMode.setClickable(true);
+            mImageSwith.setImageResource(R.drawable.btn_switch);
+            mImageSwith.setClickable(true);
+        }else {
+            mImageVoice.setImageResource(R.drawable.btn_speech_pre);
+            mImageMode.setImageResource(R.drawable.btn_mode_g);
+            mImageMode.setClickable(false);
+            mImageSwith.setImageResource(R.drawable.btn_switch_g);
+            mImageSwith.setClickable(false);
+        }
+
     }
 
     public boolean getRecordingStatus () {
@@ -468,6 +494,7 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
             mTopLayout.setVisibility(View.INVISIBLE);
             isShow = false;
             if (MicStatus == false) {
+
                 mImageMic.setImageResource(R.drawable.btn_mic);
                 // mTextMic.setText(getResources().getString(R.string.txt_ban_mic_pre));
                 MicStatus = true;
@@ -760,6 +787,31 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
         VideoRecord.getInstance(mContext).finish();
         mRecordHandler.removeCallbacksAndMessages(null);
     }
+
+    public void clickMic(){
+        ((IPopViewCallBack) getContext()).onClickMenuBtn("btn_ban_mic");
+        updateMenueImgAdTxt(3);
+        if (mCtrlPopView != null) {
+            mCtrlPopView.dismiss();
+        }
+    }
+
+    public void clickVideo(){
+        ((IPopViewCallBack) getContext()).onClickMenuBtn("btn_voice_mode");
+        updateMenueImgAdTxt(4);
+        if (mCtrlPopView != null) {
+            mCtrlPopView.dismiss();
+        }
+    }
+
+    public void clickAudioMode(){
+        ((IPopViewCallBack) getContext()).onClickMenuBtn("btn_audio_mode");
+        updateMenueImgAdTxt(7);
+        if (mCtrlPopView != null) {
+            mCtrlPopView.dismiss();
+        }
+    }
+
 }
 
 

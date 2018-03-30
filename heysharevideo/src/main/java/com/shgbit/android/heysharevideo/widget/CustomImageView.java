@@ -274,7 +274,9 @@ public class CustomImageView extends View {
     }
 
     public void stopTime(){
-        stepTimeHandler.removeCallbacksAndMessages(null);
+        if (stepTimeHandler != null) {
+            stepTimeHandler.removeCallbacksAndMessages(null);
+        }
         mTickerStopped = true;
     }
 }

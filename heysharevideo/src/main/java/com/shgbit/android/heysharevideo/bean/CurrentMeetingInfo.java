@@ -1,5 +1,7 @@
 package com.shgbit.android.heysharevideo.bean;
 
+import com.shgbit.android.heysharevideo.json.Meeting;
+
 public class CurrentMeetingInfo {
 	private String result;
 	private String failedMessage;

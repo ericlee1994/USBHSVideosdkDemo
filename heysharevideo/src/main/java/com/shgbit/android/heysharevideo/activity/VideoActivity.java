@@ -1,6 +1,7 @@
 package com.shgbit.android.heysharevideo.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -50,6 +51,8 @@ import com.shgbit.android.heysharevideo.bean.CtrlStatusParam;
 import com.shgbit.android.heysharevideo.bean.DISCONNECT_STATE;
 import com.shgbit.android.heysharevideo.bean.DISPLAY_MODE;
 import com.shgbit.android.heysharevideo.bean.DisplayType;
+import com.shgbit.android.heysharevideo.bean.MainImage;
+import com.shgbit.android.heysharevideo.bean.MeetingRecord;
 import com.shgbit.android.heysharevideo.bean.MemberInfo;
 import com.shgbit.android.heysharevideo.bean.SESSIONTYPE;
 import com.shgbit.android.heysharevideo.bean.STATUS;
@@ -91,6 +94,7 @@ import com.shgbit.android.heysharevideo.widget.PopupOldView;
 import com.shgbit.android.heysharevideo.widget.PopupView;
 import com.shgbit.android.heysharevideo.widget.TitleLayout;
 import com.shgbit.android.heysharevideo.widget.VCDialog;
+import com.shgbit.android.heysharevideo.widget.VideoRecord;
 
 import org.json.JSONObject;
 
@@ -112,6 +116,7 @@ import static android.view.Window.FEATURE_NO_TITLE;
 
 /**
  * Created by Eric on 2017/9/21.
+ *
  * @author Eric
  */
 
@@ -129,7 +134,6 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
     private InvitedMeeting invitedMeeting;
     private static final int CONNECT_NEMO_ERROR = 0x001;
-    private static final int DIALOGFALSE = 0x002;
     private static final int DIALOGINVITED = 0x003;
     private static final int HANGUP = 0x004;
     private static final int UPDATAVIEW = 0x005;
@@ -152,6 +156,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private static final int PICUPLOADSTATE = 0x023;
     private static final int SENDCOMMENT = 0x024;
     private static final int CLEANPZ = 0x025;
+    private static final int ClOSEVIDEO = 0x026;
 
     private static final int MSG_BTN_SWITCH_MIC = 0x100;
     private static final int MSG_BTN_SWITCH_VIDEO = 0x200;
@@ -159,13 +164,11 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private static final int MSG_BTN_SWITCH_CAMERA = 0x400;
     private static final int MSG_BTN_VOICE_MODE_UNCHANGED = 0x500;
 
-    private final int mScreenWidth = Common.SCREENHEIGHT;
-    private final int mScreenHeight = Common.SCREENWIDTH;
     private static String[] TRACKS;
 
     private boolean foregroundCamera = true;
-    private boolean closeCamera = false;
-    private boolean mic = true;
+    private boolean muteCamera = false;
+    private boolean muteMic = true;
     private boolean isHangup = false;
     private boolean isGetTime = false;
     private boolean isInPIP = false;
@@ -179,6 +182,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private boolean clickPizhu = false;
     private boolean picState = false;
     private boolean hasEndMqtt = false;
+    private boolean isVideoRecord = false;
+    private boolean isMainView = false;
 
     private ArrayList<MemberInfo> mScreenList;
     private ArrayList<MemberInfo> mOtherList;
@@ -206,7 +211,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
     private FragmentTransaction transaction;
     private RequestCtrl requestCtrl;
-//    private CustomPaintView mainView;
+    //    private CustomPaintView mainView;
     private Syntony syntony;
 
 
@@ -219,8 +224,11 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private Surface mPreviewSurface;
     private boolean isUvcCamera;
     private int currentCamera = 2;
+    private int currentCamType = 0;
     private USBMonitor.UsbControlBlock mCtrlBlock;
     private boolean isFirstReceive = true;
+
+    private Context mContext;
 
 
     @Override
@@ -228,16 +236,23 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         super.onCreate(savedInstanceState);
         GBLog.i(TAG, "VideoActivity onCreate");
         isHangup = false;
-        mic = Common.ISMIC;
+        muteMic = Common.ISMUTEMIC;
         audioMode = Common.ISAUDIOMODE;
         mExitState = DISCONNECT_STATE.NORMAL;
         requestCtrl = new RequestCtrl(this);
+
+        mContext = this;
 
         Intent intentInfo = getIntent();
         final String number = intentInfo.getStringExtra("number");
         String password = intentInfo.getStringExtra("password");
         String meetingName = intentInfo.getStringExtra("meetingName");
         String username = intentInfo.getStringExtra("username");
+        isMainView = intentInfo.getBooleanExtra("mainView", false);
+        isVideoRecord = intentInfo.getBooleanExtra("videoRecord", false);
+        muteMic = intentInfo.getBooleanExtra("isMic", true);
+        muteCamera = intentInfo.getBooleanExtra("isVideo", false);
+        GBLog.e(TAG, "isMainView:" + isMainView + ", isVideoRecord:" + isVideoRecord + ", closeMic:" + muteMic + ", closeVideo:" + muteCamera);
         Common.USERNAME = username;
         Common.PASSWORD = password;
 
@@ -258,7 +273,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         try {
             nemoSDK.shutdown();
             GBLog.i(TAG, "nemoSDK shutdown");
-        }catch (Exception e) {
+        } catch (Exception e) {
             GBLog.e(TAG, "nemoSDK.shutdown:" + e.toString());
         }
 
@@ -280,6 +295,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         nemoSDK.setNemoKickOutListener(mNemoKickOutListener);
 
         MeetingInfoManager.getInstance().setOnMeetingInfoUpdateListener(meetingInfoUpdateListener);
+        MeetingInfoManager.getInstance().NemoChange(null, NemoSDK.getLocalVideoStreamID());
 
 //        MQTTClient.getInstance().setIMqttCmtCallback(iMqttCmtCallback);
 //        MQTTClient.getInstance().setIMqttEventCallBack(iMqttEventCallback);
@@ -294,17 +310,22 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 //        requestCtrl.sync();
 //        requestCtrl.setiCtrlCallBack(ictrlCallback);
         syntony = new Syntony();
-        syntony.init(this, R.id.video_fragment,R.id.llyt_button2, Common.USERNAME);
+        syntony.init(this, R.id.video_fragment, R.id.llyt_button2, Common.USERNAME);
 
-        mUSBMonitor = new USBMonitor(getApplicationContext(), mOnDeviceConnectListener);
+        mUSBMonitor = new USBMonitor(this, mOnDeviceConnectListener);
+        if (isMainView) {
+            MainImage mi = new MainImage();
+            mi.setMeetingId(mRecallMeeting.getId());
+            mi.setUserName(Common.USERNAME);
+            ServerInteractManager.getInstance().setMainImage(mi);
+        }
 
     }
 
     private final USBMonitor.OnDeviceConnectListener mOnDeviceConnectListener = new USBMonitor.OnDeviceConnectListener() {
         @Override
         public void onAttach(final UsbDevice device) {
-            Log.v(TAG, "onAttach:");
-            Toast.makeText(getApplicationContext(), "USB_DEVICE_ATTACHED", Toast.LENGTH_SHORT).show();
+            GBLog.e(TAG, "UVC onAttach!!!");
 
             synchronized (mSync) {
                 onDialogResult(true);
@@ -313,7 +334,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
         @Override
         public void onConnect(final UsbDevice device, final USBMonitor.UsbControlBlock ctrlBlock, final boolean createNew) {
-            GBLog.e(TAG, "UVC onConnect!");
+            GBLog.e(TAG, "UVC onConnect!!!");
             isUvcCamera = true;
             mCtrlBlock = ctrlBlock;
 
@@ -343,6 +364,16 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
             releaseCamera();
 
+            isUvcCamera = false;
+            currentCamera = 0;
+            videoView.updateCamera(false);
+            NemoSDK.getInstance().updateCamera(false);
+            videoView.getmLocalVideoCell().notifyRender();
+
+            videoView.requestLocalFrame();
+            NemoSDK.getInstance().requestCamera();
+
+
         }
 
         @Override
@@ -357,12 +388,11 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
     @Override
     public void onDialogResult(boolean canceled) {
-        if (canceled && mUSBMonitor!=null) {
+        if (canceled && mUSBMonitor != null) {
             final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(getApplicationContext(), com.serenegiant.uvccamera.R.xml.device_filter);
-            if(filter!=null&&filter.size()>0){
+            if (filter != null && filter.size() > 0) {
                 List<UsbDevice> devices = mUSBMonitor.getDeviceList(filter.get(0));
-                if(devices!=null&&devices.size()>0)
-                {
+                if (devices != null && devices.size() > 0) {
                     mUSBMonitor.requestPermission(devices.get(0));
                 }
             }
@@ -393,6 +423,13 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         }
     }
 
+    private synchronized void releaseUsbMonitor() {
+        if (mUSBMonitor != null) {
+            mUSBMonitor.destroy();
+            mUSBMonitor = null;
+        }
+    }
+
 
     private final IFrameCallback mIFrameCallback = new IFrameCallback() {
         @Override
@@ -413,7 +450,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                 NativeDataSourceManager.putVideoData(NemoSDK.getInstance().getDataSourceId(), yuv, captureWidth * captureHeight * 3 / 2,
                         captureWidth, captureHeight, 0, true);
             }
-            NativeDataSourceManager.putVideoData( "LocalPreviewID", yuv, captureWidth * captureHeight * 3 / 2,
+            NativeDataSourceManager.putVideoData("LocalPreviewID", yuv, captureWidth * captureHeight * 3 / 2,
                     captureWidth, captureHeight, 0, true);
         }
     };
@@ -445,15 +482,27 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             }
         }
 
+        @Override
+        public void onDesFragment() {
+            syntony.des();
+        }
+
     };
 
     private MeetingInfoManager.OnMeetingInfoUpdateListener meetingInfoUpdateListener = new MeetingInfoManager.OnMeetingInfoUpdateListener() {
         @Override
-        public void onMemberChanged(ArrayList<MemberInfo> mScreen, ArrayList<MemberInfo> mOther, ArrayList<MemberInfo> mUnjoined, int duration, boolean isMemberContent) {
-            GBLog.e(TAG, "OnMeetingInfoUpdateListener");
+        public void onMemberChanged(ArrayList<MemberInfo> mScreen, ArrayList<MemberInfo> mOther, ArrayList<MemberInfo> mUnjoined, int duration, boolean isMemberContent, String meetingName) {
+
+            for (int i = 0; i < mScreen.size(); i++) {
+                GBLog.e(TAG, "onMemberChanged isLocal["+ i +"]" + mScreen.get(i).isLocal());
+                GBLog.e(TAG, "onMemberChanged isUvc[" + i + "]" + mScreen.get(i).isUvc());
+                GBLog.e(TAG, "onMemberChanged getDataSourceID["+ i +"]" + mScreen.get(i).getDataSourceID());
+                GBLog.e(TAG, "onMemberChanged getDisplayName["+ i +"]" + mScreen.get(i).getDisplayName());
+            }
             if (mScreen != null && mScreen.size() > 0) {
                 if (!mScreen.get(0).getDataSourceID().equalsIgnoreCase(NemoSDK.getLocalVideoStreamID())) {
 //                    nemoSDK.focusVideoStream(mScreen.get(0).getDataSourceID());
+                    nemoSDK.forceLayout(mScreen.get(0).getParticipantId());
                 }
             }
 
@@ -524,7 +573,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         @Override
         public void onMemberCommentExit(MemberInfo mExit) {
 
-            if (curResource.equals(mExit.getResId())){
+            if (curResource.equals(mExit.getResId())) {
                 if (hasComment) {
                     requestCtrl.postCmtLeave(curResource);
                     mUIHandler.sendEmptyMessage(EXIT_COMMENT);
@@ -582,21 +631,32 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                                     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                                     mUIHandler.sendEmptyMessage(MSG_BTN_VOICE_MODE_UNCHANGED);
 
-                                    MeetingInfoManager.getInstance().NemoChange(null, NemoSDK.getLocalVideoStreamID());
-                                    MeetingInfoManager.getInstance().StateChange(mUsers, STATUS.INVITING);
 
+                                    MeetingInfoManager.getInstance().StateChange(mUsers, STATUS.INVITING);
 
 
                                     GBLog.i(TAG, "Nemo call is connecting :" + s);
                                     break;
                                 case CONNECTED:
                                     GBLog.e(TAG, "Nemo call has connected" + s);
+                                    hideSoftKeyboard();
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 //                                    mUIHandler.sendEmptyMessage(AUDIOMODE);
                                     mUIHandler.removeMessages(CALL_NEMO_ERROR);
-                                    mUIHandler.sendEmptyMessage(CLOSEMIC);
-//                                    isFirstReceive = true;
+                                    if (muteMic == true) {
+                                        mUIHandler.sendEmptyMessage(CLOSEMIC);
+                                    }
+                                    if (muteCamera == true) {
+                                        mUIHandler.sendEmptyMessage(ClOSEVIDEO);
+                                    }
 
-
+                                    if (isVideoRecord) {
+                                        GBLog.e(TAG, "Video record at connected");
+                                        MeetingRecord meetingRecord = new MeetingRecord();
+                                        meetingRecord.setMeetingId(mRecallMeeting.getId());
+                                        VideoRecord.getInstance(mContext).startRecord(meetingRecord);
+                                    }
+                                    isFirstReceive = true;
 
 
 //                                    requestCtrl.getCmtStatus();
@@ -771,32 +831,38 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         @Override
         public void receiveLocal() {
 
+            GBLog.e(TAG, "receiveLocal, local camera has changed isFirstReceive:" + isFirstReceive + ", isUvc:" + isUvcCamera);
+
             mUVCCameraView = videoView.getmLocalVideoCell();
 
             if (isFirstReceive) {
-                GBLog.e(TAG, "local init");
+
+//                videoView.requestLocalFrame();
+//                nemoSDK.requestCamera();
+
                 if (isUvcCamera) {
                     synchronized (mSync) {
                         if (mUVCCamera != null) {
-
+                            GBLog.e(TAG, "mUVCCamera:setFrameCallback" + mUVCCamera);
                             mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV420SP);
                             mUVCCamera.startPreview();
                         }
                     }
-                    onDialogResult(true);
-                } else {
+//                    onDialogResult(true);
+                }else {
                     videoView.requestLocalFrame();
-                    NemoSDK.getInstance().requestCamera();
+                    nemoSDK.requestCamera();
                 }
                 isFirstReceive = false;
             }
 
 
-            if (isUvcCamera){
+            if (isUvcCamera) {
                 GBLog.e(TAG, "isUvcCamera render");
                 currentCamera = 2;
                 videoView.updateCamera(true);
-                NemoSDK.getInstance().updateCamera(isUvcCamera);
+                nemoSDK.updateCamera(isUvcCamera);
+                videoView.getmLocalVideoCell().releaseGxt();
                 releaseCamera();
                 videoView.getmLocalVideoCell().releaseRender();
 
@@ -808,8 +874,6 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                     public void run() {
                         final UVCCamera camera = new UVCCamera();
                         try {
-
-
                             camera.open(mCtrlBlock);
 //                        isActive = true;
                             Log.i(TAG, "supportedSize:" + camera.getSupportedSize());
@@ -824,33 +888,21 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                             }
                         }
 
-                        if (mUVCCameraView != null) {
-                            final SurfaceTexture st = mUVCCameraView.getSurfaceTexture();
-                            if (st != null) {
-                                mPreviewSurface = new Surface(st);
-                                camera.setPreviewDisplay(mPreviewSurface);
-                                camera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV420SP);
-                                camera.startPreview();
-                            }
+                        final SurfaceTexture st = mUVCCameraView.getSurfaceTexture();
+                        if (st != null) {
+                            mPreviewSurface = new Surface(st);
+                            camera.setPreviewDisplay(mPreviewSurface);
+                            camera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV420SP);
+                            camera.startPreview();
                         }
+
                         synchronized (mSync) {
                             mUVCCamera = camera;
                         }
                     }
                 }, 0);
-
-            }else {
-                currentCamera = 0;
-                videoView.updateCamera(false);
-                NemoSDK.getInstance().updateCamera(false);
-                videoView.getmLocalVideoCell().notifyRender();
-
-                videoView.requestLocalFrame();
-                NemoSDK.getInstance().requestCamera();
             }
-
         }
-
     };
 
     private ITitleCallBack mTitleListener = new ITitleCallBack() {
@@ -1158,10 +1210,10 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 //    };
 
 
-    private static class UIHandler extends Handler{
+    private static class UIHandler extends Handler {
         private final WeakReference<VideoActivity> mVideoActivity;
 
-        public UIHandler(VideoActivity videoActivity){
+        public UIHandler(VideoActivity videoActivity) {
             mVideoActivity = new WeakReference<>(videoActivity);
         }
 
@@ -1173,56 +1225,53 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                     case CONNECT_NEMO_ERROR:
                         activity.showDialog(msg.obj, VCDialog.DialogType.Normal);
                         break;
-                    case DIALOGFALSE:
-//                    showDialog(msg.obj, false, VCDialog.DialogStyle.Normal);
-                        break;
                     case DIALOGINVITED:
                         InvitedMeeting invitedMeeting = (InvitedMeeting) msg.obj;
                         activity.showDialog(invitedMeeting, VCDialog.DialogType.Invite);
                         break;
                     case CLOSEMIC:
-                        activity.nemoSDK.enableMic(activity.mic,true);
-                        activity.videoView.offLocalVoice(activity.mic);
-                        if (activity.mic){
+                        GBLog.e(TAG, "CLOSEMIC");
+                        activity.muteMic = true;
+                        activity.nemoSDK.enableMic(activity.muteMic, true);
+                        activity.videoView.closeLocalMic(activity.muteMic);
+                        if (activity.muteMic) {
                             Toast.makeText(activity, R.string.tip_45, Toast.LENGTH_SHORT).show();
                         }
 //                        MQTTClient.getInstance().publishMsg(TOPIC.CTRL_DEVICE + mRecallMeeting, activity.getLocalCtrlStatus());
                         break;
+                    case ClOSEVIDEO:
+                        GBLog.e(TAG, "ClOSEVIDEO");
+                        activity.muteCamera = true;
+                        activity.nemoSDK.setVideoMute(activity.muteCamera);
+                        activity.videoView.closeLocalView(activity.muteCamera);
+                        break;
                     case MSG_BTN_SWITCH_MIC:
-                        activity.mic = !activity.mic;
-                        if (activity.mic) {
-                            activity.videoView.offLocalVoice(true);
-                        } else {
-                            activity.videoView.offLocalVoice(false);
-                        }
-                        activity.nemoSDK.enableMic(activity.mic, true);
+                        GBLog.e(TAG, "MSG_BTN_SWITCH_MIC");
+                        activity.muteMic = !activity.muteMic;
+                        activity.videoView.closeLocalMic(activity.muteMic);
+                        activity.nemoSDK.enableMic(activity.muteMic, true);
 //                        MQTTClient.getInstance().publishMsg(TOPIC.CTRL_DEVICE + mRecallMeeting.getId(), activity.getLocalCtrlStatus());
                         break;
                     case MSG_BTN_SWITCH_VIDEO:
-                        activity.closeCamera = !activity.closeCamera;
-                        if (activity.closeCamera) {
-                            activity.videoView.closeLocalView(true);
-                        } else {
-                            activity.videoView.closeLocalView(false);
-                        }
-                        activity.nemoSDK.setVideoMute(activity.closeCamera);
+                        GBLog.e(TAG, "MSG_BTN_SWITCH_VIDEO");
+                        activity.muteCamera = !activity.muteCamera;
+                        activity.videoView.closeLocalView(activity.muteCamera);
+                        activity.nemoSDK.setVideoMute(activity.muteCamera);
 //                        MQTTClient.getInstance().publishMsg(TOPIC.CTRL_DEVICE + mRecallMeeting.getId(), activity.getLocalCtrlStatus());
                         break;
                     case MSG_BTN_SWITCH_CAMERA:
+                        GBLog.e(TAG, "MSG_BTN_SWITCH_CAMERA");
                         activity.foregroundCamera = !activity.foregroundCamera;
                         activity.nemoSDK.switchCamera(activity.foregroundCamera ? 1 : 0);
                         break;
                     case MSG_BTN_VOICE_MODE:
+                        GBLog.e(TAG, "MSG_BTN_VOICE_MODE");
                         activity.audioMode = !activity.audioMode;
                         activity.nemoSDK.switchCallMode(activity.audioMode);
                         MeetingInfoManager.getInstance().ModeVoice(activity.audioMode);
                         if (!activity.audioMode) {
-                            if (activity.closeCamera) {
-                                activity.videoView.closeLocalView(true);
-                            } else {
-                                activity.videoView.closeLocalView(false);
-                            }
-                            activity.nemoSDK.setVideoMute(activity.closeCamera);
+                            activity.videoView.closeLocalView(activity.muteCamera);
+                            activity.nemoSDK.setVideoMute(activity.muteCamera);
                         }
                         break;
                     case MSG_BTN_VOICE_MODE_UNCHANGED:
@@ -1426,7 +1475,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                 || displayMode.equals(DISPLAY_MODE.NOT_FULL_QUARTER)) {
             mTopLayout = new TitleLayout(this);
             mBottomLayout = new LinearLayout(this);
-            popupView = new PopupOldView(this, mic, closeCamera, audioMode);
+            popupView = new PopupOldView(this, muteMic, muteCamera, audioMode);
             videoView = new MyVideoVIew(this, displayMode);
 
             dismissPopup();
@@ -1468,7 +1517,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             mWholeLayout.addView(videoView);
         } else if (displayMode.equals(DISPLAY_MODE.FULL_PIP_SIX)) {
             videoView = new MyVideoVIew(this, displayMode);
-            popupView = new PopupOldView(this,  mic, closeCamera, audioMode);
+            popupView = new PopupOldView(this, muteMic, muteCamera, audioMode);
             mBottomLayout = new LinearLayout(this);
             dismissPopup();
             videoView.setiVideoViewCallBack(mVideoViewListener);
@@ -1613,6 +1662,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                     .getWindowToken(), 0);
         }
     }
+
     final String BTN_SHOW_PERSON = "btn_show_person";
     final String BTN_ADD_PERSON = "btn_add_person";
     final String BTN_BAN_MIC = "btn_ban_mic";
@@ -1634,7 +1684,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                 syntony.startAddressList(true, "horizontal", false, null, null);
                 syntony.setExCallBack(videoCallBack);
             } else if (BTN_BAN_MIC.equals(type)) {
-                GBLog.i(TAG, "[user operation]click mic btn:" + mic);
+                GBLog.e(TAG, "[user operation]click muteMic btn:" + muteMic);
                 mUIHandler.sendEmptyMessage(MSG_BTN_SWITCH_MIC);
             } else if (BTN_CLOSE_CAMERA.equals(type)) {
                 GBLog.i(TAG, "[user operation]click off camera");
@@ -1673,7 +1723,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                     clickPizhu = true;
                     String codeName = codeName(mScreenList);
                     for (int i = 0; i < mScreenList.size(); i++) {
-                        if ((hasComment && curResource.equals(mScreenList.get(i).getResId())) || !hasComment){
+                        if ((hasComment && curResource.equals(mScreenList.get(i).getResId())) || !hasComment) {
                             if (hasComment) {
                                 MeetingInfoManager.getInstance().CommetModeChange();
                             }
@@ -1818,17 +1868,17 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
     private String getLocalCtrlStatus() {
         CtrlStatusParam micCtrlStatusParam = new CtrlStatusParam();
-        if (mic){
+        if (muteMic) {
             micCtrlStatusParam.setStatus("Mute");
-        }else {
+        } else {
             micCtrlStatusParam.setStatus("Unmute");
         }
         micCtrlStatusParam.setObject("Microphone");
 
         CtrlStatusParam camCtrlStatusParam = new CtrlStatusParam();
-        if (closeCamera){
+        if (muteCamera) {
             camCtrlStatusParam.setStatus("Mute");
-        }else {
+        } else {
             camCtrlStatusParam.setStatus("Unmute");
         }
         camCtrlStatusParam.setObject("Camera");
@@ -1858,7 +1908,22 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             nemoSDK.setNemoSDKListener(null);
             nemoSDK.setNemoKickOutListener(null);
             nemoSDK.releaseCamera();
-            releaseCamera();
+//            releaseCamera();
+
+            synchronized (mSync) {
+                if (mUSBMonitor != null) {
+                    mUSBMonitor.unregister();
+                }
+            }
+
+            queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    releaseCamera();
+                    releaseUsbMonitor();
+                    GBLog.e(TAG, "finish release");
+                }
+            }, 0);
 
             videoView.setOnClickListener(null);
             ServerInteractManager.getInstance().removeServerInteractCallback(this);
@@ -1995,7 +2060,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                         Message msg = Message.obtain(mUIHandler, MAKE_CALL, mRecallMeeting);
                         msg.sendToTarget();
 
-                    }else {
+                    } else {
                         showDialog("s:" + error, VCDialog.DialogType.ErrorHangup);
                     }
                 }
@@ -2014,7 +2079,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                     MeetingInfoManager.getInstance().StateChange(mUserInvites, STATUS.INVITING);
                     mUserInvites = null;
                 }
-                showToast(getResources().getString(R.string.tip_11));
+                showToast(getResources().getString(R.string.tip_111));
 
             } else {
                 showToast(getResources().getString(R.string.tip_12) + error);
@@ -2204,7 +2269,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     @Override
     protected void onStart() {
         super.onStart();
-        if(mUSBMonitor!=null){
+        if (mUSBMonitor != null) {
             mUSBMonitor.register();
         }
         GBLog.i(TAG, "onStart");
@@ -2220,13 +2285,13 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     @Override
     protected void onStop() {
         super.onStop();
-        GBLog.i(TAG, "onStop");
+        GBLog.e(TAG, "onStop");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        GBLog.i(TAG, "onDestroy");
+        GBLog.e(TAG, "onDestroy");
     }
 
     @Override
@@ -2290,20 +2355,16 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     @Override
     public void setMicState(boolean isMicMute) {
         //isMicMute为true静音，关视频
-        GBLog.e(TAG,  "isMicMute= " + isMicMute + ", mic=" + mic);
+        GBLog.e(TAG, "isMicMute= " + isMicMute + ", muteMic=" + muteMic);
 
         if (isMicMute) {
-            if (isMicMute != mic){
-                GBLog.e(TAG,  "not same");
-                mic = isMicMute;
-                mUIHandler.removeMessages(CLOSEMIC);
-                mUIHandler.sendEmptyMessage(CLOSEMIC);
-            } else {
-                GBLog.e(TAG,  "is same");
+            if (!muteMic) {
+                popupView.clickMic();
             }
-            nemoSDK.setVideoMute(true);
-        }else {
-            nemoSDK.setVideoMute(false);
+
+            if (!muteCamera) {
+                popupView.clickVideo();
+            }
         }
 
     }

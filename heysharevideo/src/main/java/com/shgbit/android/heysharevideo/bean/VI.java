@@ -28,6 +28,7 @@ public class VI {
     private ArrayList<String> mUrls;
     private String mResId;
     private boolean isComment;
+    private boolean isUVC;
 
     public MemberInfo.NET_STATUS getNet_status() {
         return net_status;
@@ -191,5 +192,13 @@ public class VI {
 
     public void setComment(boolean comment) {
         isComment = comment;
+    }
+
+    public boolean isUVC() {
+        return isUVC;
+    }
+
+    public void setUVC(boolean UVC) {
+        isUVC = UVC;
     }
 }

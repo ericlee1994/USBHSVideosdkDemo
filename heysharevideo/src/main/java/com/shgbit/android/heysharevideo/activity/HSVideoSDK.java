@@ -11,9 +11,12 @@ import com.ainemo.sdk.otf.Settings;
 import com.shgbit.android.heysharevideo.addressaar.AddressCallBack;
 import com.shgbit.android.heysharevideo.addressaar.Syntony;
 import com.shgbit.android.heysharevideo.callback.HSSDKListener;
+import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
 import com.shgbit.android.heysharevideo.interactmanager.ServerConfigCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager;
+import com.shgbit.android.heysharevideo.json.BusyMeetingInfo;
+import com.shgbit.android.heysharevideo.json.CreateMeetingInfo;
 import com.shgbit.android.heysharevideo.json.HotFixConfig;
 import com.shgbit.android.heysharevideo.json.InviteCancledInfo;
 import com.shgbit.android.heysharevideo.json.InvitedMeeting;
@@ -21,6 +24,7 @@ import com.shgbit.android.heysharevideo.json.LoginInfo;
 import com.shgbit.android.heysharevideo.json.Meeting;
 import com.shgbit.android.heysharevideo.json.PushConfig;
 import com.shgbit.android.heysharevideo.json.RefuseInfo;
+import com.shgbit.android.heysharevideo.json.ReserveInfo;
 import com.shgbit.android.heysharevideo.json.TimeoutInfo;
 import com.shgbit.android.heysharevideo.json.User;
 import com.shgbit.android.heysharevideo.json.ValidateInfo;
@@ -31,16 +35,27 @@ import com.shgbit.android.heysharevideo.util.GBLog;
 
 /**
  * Created by Eric on 2018/2/12.
+ * @author Eric
  */
 
 public class HSVideoSDK {
     private static final String TAG = "HSVideoSDK";
     private String userName;
+    private String settingNum;
     private String serverIP;
     private Context mContext;
 
     private HSSDKListener sdkListener;
+    private HSSDKReserveListener hssdkReserveListener;
     private NemoSDK nemoSDK;
+    private Syntony syntony;
+
+    static boolean hasStartMeeting = false;
+    private boolean hasInstantMeeting = false;
+    private boolean isMainView = false;
+    private boolean isVideoRecord = false;
+    private boolean isMic = false;
+    private boolean isVideo = true;
 
     private HSVideoSDK() {
     }
@@ -54,6 +69,7 @@ public class HSVideoSDK {
     }
 
     public void init(String serverIP, String userName, Context context, HSSDKListener hssdkListener) {
+        GBLog.i(TAG, "HSVideoSDK init.");
         this.mContext = context.getApplicationContext();
         this.userName = userName;
         this.serverIP = serverIP;
@@ -114,25 +130,112 @@ public class HSVideoSDK {
         ServerInteractManager.getInstance().logout();
     }
 
-    public void startMeeting(String meetingNumber, String meetingPwd) {
+    public void startMeeting(String meetingNumber, String meetingPwd, String meetingName, String settingNum) {
+        this.settingNum = settingNum;
+
+        parseSettingNum(settingNum);
+
+        if (meetingName == null){
+            meetingName = "默认会议";
+        }
+
         Intent intent = new Intent(mContext, VideoActivity.class);
         intent.putExtra("username", userName);
         intent.putExtra("password", meetingPwd);
-        intent.putExtra("meetingName", "预约会议");
+        intent.putExtra("meetingName", meetingName);
         intent.putExtra("number", meetingNumber);
+        intent.putExtra("mainView", isMainView);
+        intent.putExtra("videoRecord", isVideoRecord);
+        intent.putExtra("isMic", !isMic);
+        intent.putExtra("isVideo", !isVideo);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
+
+        hasStartMeeting = true;
     }
 
     public void finalizeSDK() {
         ServerInteractManager.getInstance().finalize();
-
     }
+
+    public void refuseMeeting(String meetingId, String userName, String inviter) {
+        BusyMeetingInfo busyMeetingInfo = new BusyMeetingInfo();
+        busyMeetingInfo.setMeetingId(meetingId);
+        busyMeetingInfo.setUserName(userName);
+        busyMeetingInfo.setInviter(inviter);
+        ServerInteractManager.getInstance().busyMeeting(busyMeetingInfo);
+    }
+
     public void openAddress(Context context, int layoutId, int layoutId2, String userName, AddressCallBack addressCallBack) {
+
+		 if(syntony != null){
+            syntony.destroy();
+        }
+		
+	    syntony = new Syntony();
         Syntony syntony = new Syntony();
         syntony.init(context, layoutId, layoutId2,userName);
         syntony.startAddressList(false, "vertical", false, null, null);
         syntony.setExCallBack(addressCallBack);
+    }
+
+    public void startInstantMeeting(String createUser, String[] inviteUsers, String settingNum) {
+        this.settingNum = settingNum;
+        CreateMeetingInfo createMeetingInfo = new CreateMeetingInfo();
+        createMeetingInfo.setCreatedUser(createUser);
+        createMeetingInfo.setInvitedUsers(inviteUsers);
+        ServerInteractManager.getInstance().createMeeting(createMeetingInfo);
+        hasInstantMeeting = true;
+    }
+
+    public void createReservationMeeting(String createUser, String meetingName, String startTime, String endTime, String[] inviteUsers, HSSDKReserveListener hssdkReserveListener){
+        this.hssdkReserveListener = hssdkReserveListener;
+        ReserveInfo reserveInfo = new ReserveInfo();
+        reserveInfo.setCreatedUser(createUser);
+        reserveInfo.setMeetingName(meetingName);
+        reserveInfo.setStartTime(startTime);
+        reserveInfo.setEndTime(endTime);
+        reserveInfo.setInvitedUsers(inviteUsers);
+        ServerInteractManager.getInstance().reserveMeeting(reserveInfo);
+    }
+
+
+    private void parseSettingNum(String settingNum) {
+        if (settingNum == null) {
+           return;
+        } else {
+            char[] simpleNums = settingNum.toCharArray();
+
+            for (int i = 0; i < simpleNums.length; i++) {
+                if (i == 0) {
+                    if (simpleNums[0] == '1') {
+                        isMainView = true;
+                    }else {
+                        isMainView = false;
+                    }
+                }else if (i == 1) {
+                    if (simpleNums[1] == '1'){
+                        isVideoRecord = true;
+                    }else {
+                        isVideoRecord = false;
+                    }
+                }else if (i == 2) {
+                    if (simpleNums[2] == '1') {
+                        isMic = true;
+                    } else {
+                        isMic = false;
+                    }
+                }else if (i == 3) {
+                    if (simpleNums[3] == '0') {
+                        isVideo = false;
+                    }else {
+                        isVideo = true;
+                    }
+                }
+            }
+
+        }
+        GBLog.e(TAG, "isMainView:" + isMainView + ", isVideoRecord:" + isVideoRecord + ", isMic:" + isMic  + ", isVideo:" + isVideo);
     }
 
     private void checkID() {
@@ -189,6 +292,13 @@ public class HSVideoSDK {
         @Override
         public void onCreateMeeting(boolean result, String error, Meeting meeting) {
 
+            if (result && hasInstantMeeting) {
+                startMeeting(meeting.getMeetingId(), meeting.getPassword(),"", settingNum);
+            }else {
+                GBLog.e(TAG, "onCreateMeeting: false," + error );
+            }
+            hasInstantMeeting = false;
+
         }
 
         @Override
@@ -218,7 +328,8 @@ public class HSVideoSDK {
 
         @Override
         public void onReserveMeeting(boolean success, String error, Meeting meeting) {
-
+//            sdkListener.onReserveMeeting(success, meeting);
+            hssdkReserveListener.onReserveMeeting(success, error, meeting);
         }
 
         @Override
@@ -248,7 +359,9 @@ public class HSVideoSDK {
 
         @Override
         public void eventInvitedMeeting(InvitedMeeting meeting) {
-            sdkListener.inviteMeeting(meeting);
+            if (!hasStartMeeting) {
+                sdkListener.inviteMeeting(meeting);
+            }
         }
 
         @Override

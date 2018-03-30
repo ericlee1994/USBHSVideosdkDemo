@@ -9,4 +9,5 @@ import com.shgbit.android.heysharevideo.json.User;
 
 public interface VideoCallBack extends ExternalCallBack {
     void invite(User[] users);
+    void onDesFragment();
 }

@@ -12,11 +12,15 @@
         android:layout_weight="1"
         android:background="@drawable/bg_tital"
         android:orientation="horizontal">
+        <Space
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"/>
         <ImageView
             android:id="@+id/img_back_frag_hor_group"
             android:layout_width="1px"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="0.7"
             android:src="@drawable/btn_back"
             android:scaleType="centerInside"/>
         <TextView
@@ -24,7 +28,7 @@
             android:layout_width="1px"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:text="@string/tital_addresslist"
             android:textColor="@color/white_color"
             />
@@ -43,7 +47,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1px"
-        android:layout_weight="1.5"
+        android:layout_weight="1.8"
         android:background="@drawable/search_bar"
         android:orientation="horizontal" >
         <Space
@@ -74,7 +78,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1px"
-        android:layout_weight="7.35"
+        android:layout_weight="7.05"
         android:orientation="vertical">
         <LinearLayout
             android:layout_width="match_parent"

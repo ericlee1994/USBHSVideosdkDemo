@@ -70,6 +70,7 @@ public class MeetingInfoManager {
 	private int SCREEN_NUMBER = 6;
 
 	private int duration = 0;
+	private String mMeetingName;
 
 	private int memberSize = 0;
 	private int mJoinSize = 0;
@@ -373,10 +374,11 @@ public class MeetingInfoManager {
 
 			User[] users = cmi.getMeeting().getUsers();
 			duration = cmi.getMeeting().getDuration();
+			mMeetingName = cmi.getMeeting().getMeetingName();
 			memberSize = users.length;
 			mServerData.clear();
 			mJoinSize = 0;
-			GBLog.i(TAG, "---GetCurrentMeeting---,memberSize=" + memberSize);
+			GBLog.i(TAG, "---GetCurrentMeeting---,memberSize=" + memberSize + ",meetingName="+ mMeetingName);
 
 			for (int i = 0; i < users.length; i++) {
 				boolean isJoin = false;
@@ -407,9 +409,6 @@ public class MeetingInfoManager {
 							m.setNet_status(MemberInfo.NET_STATUS.Lost);
 							if (item.getUserName().equals(Common.USERNAME)) {
 								m.setLocal(true);
-								if (isUvc){
-									m.setUvc(true);
-								}
 							}
 
 							mServerData.add(m);
@@ -427,9 +426,8 @@ public class MeetingInfoManager {
 							m.setNet_status(MemberInfo.NET_STATUS.Lost);
 							if (item.getUserName().equals(Common.USERNAME)) {
 								m.setLocal(true);
-								if (isUvc){
-									m.setUvc(true);
-								}
+								m.setDataSourceID("LocalPreviewID");
+								m.setNet_status(MemberInfo.NET_STATUS.Normal);
 							}
 
 							mServerData.add(m);
@@ -447,9 +445,6 @@ public class MeetingInfoManager {
 							m.setNet_status(MemberInfo.NET_STATUS.Lost);
 							if (item.getUserName().equals(Common.USERNAME)) {
 								m.setLocal(true);
-								if (isUvc){
-									m.setUvc(true);
-								}
 							}
 
 							mServerData.add(m);
@@ -581,10 +576,8 @@ public class MeetingInfoManager {
 			m.setContent(false);
 			m.setAudioMute(false);
 			m.setVideoMute(false);
+			m.setUvc(isUvc);
 			m.setSessionType(changeToSessionType("mobile"));
-			if (isUvc){
-				m.setUvc(true);
-			}
 
 			mNemoData.add(m);
 			ArrayList<String> ids = new ArrayList<>();
@@ -647,7 +640,9 @@ public class MeetingInfoManager {
 				} else {
 					MemberInfo s = result.get(index);
 					s.setLocal(n.isLocal());
-					s.setUvc(n.isUvc());
+					if (s.isLocal()){
+						s.setUvc(isUvc);
+					}
 					s.setAudioMute(n.isAudioMute());
 					s.setContent(n.isContent());
 					s.setDataSourceID(n.getDataSourceID());
@@ -1169,7 +1164,7 @@ public class MeetingInfoManager {
 
 	private void CallBack() {
 		if (mOnMeetingInfoUpdateListener != null && mScreenMember != null && mOtherMember != null) {
-			GBLog.i(TAG, "Callback ============== "+",duration = "+duration);
+			GBLog.i(TAG, "Callback ============== "+",duration = "+duration + ", meetingName=" + mMeetingName);
 
 			if ((DisplayMode == DISPLAY_MODE.FULL_PIP_SIX) && !isExChange && !isPopDown && !isPopUp && !isPopUpDown) {
 				isExChange = false;
@@ -1221,6 +1216,9 @@ public class MeetingInfoManager {
 				if (item.isContent()){
 					isMemberContent = true;
 				}
+				if (item.isLocal()){
+					item.setUvc(isUvc);
+				}
 				GBLog.i(TAG, "mScreen = " + i + " ,Id=" + item.getId() + " ,Status=" + item.getStatus() + ",sessionType=" + item.getSessionType() + ",Displayname=" + item.getDisplayName() + ",NET_STATUS=" + item.getNet_status() + ",DataSourceId=" + item.getDataSourceID() + ",DisplayType=" + item.getmDisplayType() + ",resId=" + item.getResId());
 //				GBLog.e(TAG, "CallBack-CtrlStatus-Screen = " + new Gson().toJson(item.getStatusCtrl()));
 				GBLog.i(TAG, "CallBack-Screen-Uvc = " + item.isUvc());
@@ -1229,6 +1227,9 @@ public class MeetingInfoManager {
 				MemberInfo item = mOtherMember.get(i);
 				if (item.isContent()){
 					isMemberContent = true;
+				}
+				if (item.isLocal()){
+					item.setUvc(isUvc);
 				}
 				GBLog.i(TAG, "mOther = " + i + " ,Id=" + item.getId() + " ,Status=" + item.getStatus() + ",sessionType=" + item.getSessionType() + ",NET_STATUS=" + item.getNet_status() + ",DataSourceId=" + item.getDataSourceID());
 				GBLog.i(TAG, "CallBack-other-Uvc = " + item.isUvc());
@@ -1245,7 +1246,7 @@ public class MeetingInfoManager {
 				isNotFirst = true;
 			}
 
-			mOnMeetingInfoUpdateListener.onMemberChanged(mScreenMember, mOtherMember, mUnjoinedMember, duration ,isMemberContent);
+			mOnMeetingInfoUpdateListener.onMemberChanged(mScreenMember, mOtherMember, mUnjoinedMember, duration ,isMemberContent, mMeetingName);
 		}
 	}
 
@@ -1577,7 +1578,7 @@ public class MeetingInfoManager {
 				needUpdate = true;
 			}
 
-			if (info.isUvc() != newInfo.isUvc()) {
+			if (info.isUvc() != newInfo.isUvc() && !info.isLocal()) {
 				info.setUvc(newInfo.isUvc());
 				needUpdate = true;
 			}
@@ -1613,7 +1614,7 @@ public class MeetingInfoManager {
 	private OnMeetingInfoUpdateListener mOnMeetingInfoUpdateListener = null;
 
 	public interface OnMeetingInfoUpdateListener {
-		void onMemberChanged(ArrayList<MemberInfo> mScreen, ArrayList<MemberInfo> mOther, ArrayList<MemberInfo> mUnjoined, int duration, boolean isMemberContent);
+		void onMemberChanged(ArrayList<MemberInfo> mScreen, ArrayList<MemberInfo> mOther, ArrayList<MemberInfo> mUnjoined, int duration, boolean isMemberContent, String meetingName);
 		void onMemberSizeChanged(int joinedSize, int memberSize);
 		void onMemberCommentExit(MemberInfo mExit);
 	}

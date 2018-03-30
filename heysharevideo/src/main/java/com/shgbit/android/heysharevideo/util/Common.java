@@ -15,7 +15,7 @@ public class Common {
     public static int STATUS_ONLINE = 0;
     public static int STATUS_BUSY = 1;
 
-    public static boolean ISMIC = true;
+    public static boolean ISMUTEMIC = true;
     public static boolean ISAUDIOMODE = false;
     public static boolean isNemoConnected;
 

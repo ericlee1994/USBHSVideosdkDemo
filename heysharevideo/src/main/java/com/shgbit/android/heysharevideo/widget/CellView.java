@@ -149,7 +149,6 @@ public class CellView extends FrameLayout {
         this.vi = v;
     }
 
-
     public String getPicturePage () {
         return ""+mCur;
     }
