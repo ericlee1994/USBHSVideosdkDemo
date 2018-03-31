@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvContent;
     private Button btn_reserve;
     private Button btn_instant;
-    private String userName = "3052xiaobing";
+    private String userName = "lizheng";
     private String[] inviteUsers = new String[]{};
 
     @Override
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null) {
-                        meetingNumber = "910089050698";
+                        meetingNumber = "910051953000";
                     } else {
                         meetingNumber = editText.getText().toString();
                     }
