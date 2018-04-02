@@ -345,7 +345,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         @Override
         public void onDisconnect(final UsbDevice device, final USBMonitor.UsbControlBlock ctrlBlock) {
             // XXX you should check whether the comming device equal to camera device that currently using
-
+            GBLog.e(TAG, "UVC onDisconnect!!!");
             queueEvent(new Runnable() {
                 @Override
                 public void run() {
@@ -356,7 +356,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
         @Override
         public void onDettach(final UsbDevice device) {
-            Toast.makeText(getApplicationContext(), "USB_DEVICE_DETACHED", Toast.LENGTH_SHORT).show();
+            GBLog.e(TAG, "UVC onDettach!!!");
 
             isUvcCamera = false;
 
@@ -656,7 +656,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                                         meetingRecord.setMeetingId(mRecallMeeting.getId());
                                         VideoRecord.getInstance(mContext).startRecord(meetingRecord);
                                     }
-                                    isFirstReceive = true;
+//                                    isFirstReceive = true;
 
 
 //                                    requestCtrl.getCmtStatus();
@@ -836,35 +836,20 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             mUVCCameraView = videoView.getmLocalVideoCell();
 
             if (isFirstReceive) {
-
-//                videoView.requestLocalFrame();
-//                nemoSDK.requestCamera();
-
-                if (isUvcCamera) {
-                    synchronized (mSync) {
-                        if (mUVCCamera != null) {
-                            GBLog.e(TAG, "mUVCCamera:setFrameCallback" + mUVCCamera);
-                            mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV420SP);
-                            mUVCCamera.startPreview();
-                        }
-                    }
-//                    onDialogResult(true);
-                }else {
-                    videoView.requestLocalFrame();
-                    nemoSDK.requestCamera();
-                }
+                videoView.requestLocalFrame();
+                nemoSDK.requestCamera();
                 isFirstReceive = false;
             }
-
+//
 
             if (isUvcCamera) {
                 GBLog.e(TAG, "isUvcCamera render");
                 currentCamera = 2;
                 videoView.updateCamera(true);
                 nemoSDK.updateCamera(isUvcCamera);
-                videoView.getmLocalVideoCell().releaseGxt();
                 releaseCamera();
                 videoView.getmLocalVideoCell().releaseRender();
+                GBLog.e(TAG, "isUvcCamera releaseRender:" + videoView.getmLocalVideoCell());
 
                 queueEvent(new Runnable() {
                     /**
@@ -1907,23 +1892,27 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
             nemoSDK.setNemoSDKListener(null);
             nemoSDK.setNemoKickOutListener(null);
-            nemoSDK.releaseCamera();
-//            releaseCamera();
+
+            releaseCamera();
+            GBLog.e(TAG, "finish releaseCamera");
 
             synchronized (mSync) {
                 if (mUSBMonitor != null) {
                     mUSBMonitor.unregister();
+                    GBLog.e(TAG, "mUSBMonitor.unregister()");
                 }
             }
 
-            queueEvent(new Runnable() {
-                @Override
-                public void run() {
-                    releaseCamera();
-                    releaseUsbMonitor();
-                    GBLog.e(TAG, "finish release");
-                }
-            }, 0);
+            nemoSDK.releaseCamera();
+
+//            queueEvent(new Runnable() {
+//                @Override
+//                public void run() {
+//                    releaseCamera();
+//                    releaseUsbMonitor();
+//                    GBLog.e(TAG, "finish release");
+//                }
+//            }, 0);
 
             videoView.setOnClickListener(null);
             ServerInteractManager.getInstance().removeServerInteractCallback(this);

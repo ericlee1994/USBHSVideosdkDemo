@@ -14,6 +14,7 @@ import com.shgbit.android.heysharevideo.bean.DISPLAY_MODE;
 import com.shgbit.android.heysharevideo.bean.DisplayType;
 import com.shgbit.android.heysharevideo.bean.MemberInfo;
 import com.shgbit.android.heysharevideo.bean.VI;
+import com.shgbit.android.heysharevideo.bean.VideoCellView;
 import com.shgbit.android.heysharevideo.callback.IVideoViewCallBack;
 import com.shgbit.android.heysharevideo.callback.IViewLayoutCallBack;
 import com.shgbit.android.heysharevideo.contact.MeetingInfoManager;
@@ -39,7 +40,8 @@ public class MyVideoVIew extends ViewGroup{
     private ArrayList<VI> otherList = new ArrayList<VI>();
     private IVideoViewCallBack iVideoViewCallBack;
     private Handler handler = new Handler();
-    private OpenGLTextureView localVideoView;
+//    private OpenGLTextureView localVideoView;
+    private CellView localCV;
 
     private final int UPDATEVIEW = 0x001;
     private final int HIDELAYOUT = 0x002;
@@ -255,13 +257,13 @@ public class MyVideoVIew extends ViewGroup{
                             mScreenList.get(i).getVideoCellView().notifyRender();
 
                         if (mScreenList.get(i).getVideoInfo() != null) {
+
                             if (mScreenList.get(i).getVideoInfo().isLocal()) {
                                 if (isFirstInitLocal){
                                     isUVC = !mScreenList.get(i).getVideoInfo().isUVC();
                                     isFirstInitLocal = false;
                                 }
-                                localVideoView = null;
-                                localVideoView = mScreenList.get(i).getVideoCellView();
+
                                 if (!mScreenList.get(i).getVideoInfo().isUVC() == isUVC){
                                     iVideoViewCallBack.receiveLocal();
                                     isUVC = !isUVC;
@@ -269,7 +271,6 @@ public class MyVideoVIew extends ViewGroup{
                             }
                         }
                     }
-
                     requestLayout();
                     requestRender();
                     break;
@@ -600,8 +601,9 @@ public class MyVideoVIew extends ViewGroup{
                         continue;
                     }
                     if (mScreenList.get(i).getVideoCellView() != null && !mScreenList.get(i).getVideoInfo().isLocal()){
+                        mScreenList.get(i).getVideoCellView().updateCamrea(false);
                         mScreenList.get(i).getVideoCellView().requestRender();
-                        GBLog.e("VideoActivity", "drawVideoFrameRunnable" + i + "," + mScreenList.get(i).getVideoCellView());
+                        GBLog.d(TAG, mScreenList.get(i).getVideoInfo().getDataSourceID());
                     }
                 }
             }
@@ -646,14 +648,25 @@ public class MyVideoVIew extends ViewGroup{
 
     public void updateCamera(boolean isUvc) {
 
-        if (localVideoView != null) {
-            localVideoView.updateCamrea(isUvc);
+        for (int i = 0; i < mScreenList.size(); i++){
+            if (mScreenList.get(i).getVideoInfo().isLocal()){
+                mScreenList.get(i).getVideoCellView().updateCamrea(isUvc);
+                break;
+            }
         }
-
     }
 
+//        if (localVideoView != null) {
+//            localVideoView.updateCamrea(isUvc);
+//        }
+
     public OpenGLTextureView getmLocalVideoCell() {
-        return localVideoView;
+        for (int i = 0; i < mScreenList.size(); i++){
+            if (mScreenList.get(i).getVideoInfo().isLocal()){
+                return mScreenList.get(i).getVideoCellView();
+            }
+        }
+        return null;
     }
 
     public void stopLocalFrameRender() {
@@ -674,10 +687,16 @@ public class MyVideoVIew extends ViewGroup{
     private Runnable drawLocalVideoFrameRunnable = new Runnable() {
         @Override
         public void run() {
-            if (localVideoView != null) {
-                localVideoView.requestRender();
-                GBLog.e("VideoActivity", "localVideoView:" + localVideoView);
+            for (int i = 0; i < mScreenList.size(); i++){
+                if (mScreenList.get(i).getVideoInfo().isLocal()){
+                    mScreenList.get(i).getVideoCellView().requestRender();
+                    GBLog.d(TAG, mScreenList.get(i).getVideoInfo().getDataSourceID());
+                    break;
+                }
             }
+//            if (localVideoView != null) {
+//                localVideoView.requestRender();
+//            }
             requestLocalVideoRender();
         }
     };

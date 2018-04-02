@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 
 import com.ainemo.sdk.otf.OpenGLTextureView;
 
-public class VideoCellView extends OpenGLTextureView {
+public class VideoCellView extends OpenGLTextureView implements Cloneable {
     private int participantId;
 
     public VideoCellView(Context context) {
