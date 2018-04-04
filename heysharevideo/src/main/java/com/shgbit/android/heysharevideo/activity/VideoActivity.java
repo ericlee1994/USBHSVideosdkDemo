@@ -409,6 +409,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private synchronized void releaseCamera() {
         if (mUVCCamera != null) {
             try {
+                mUVCCamera.stopPreview();
                 mUVCCamera.close();
                 mUVCCamera.destroy();
             } catch (final Exception e) {
@@ -1896,6 +1897,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             releaseCamera();
             GBLog.e(TAG, "finish releaseCamera");
 
+
             synchronized (mSync) {
                 if (mUSBMonitor != null) {
                     mUSBMonitor.unregister();
@@ -1904,6 +1906,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             }
 
             nemoSDK.releaseCamera();
+            releaseUsbMonitor();
 
 //            queueEvent(new Runnable() {
 //                @Override
