@@ -1,7 +1,6 @@
 package com.shgbit.android.heysharevideo.contact;
 
 import com.ainemo.sdk.otf.VideoInfo;
-import com.google.gson.Gson;
 import com.shgbit.android.heysharevideo.bean.Command;
 import com.shgbit.android.heysharevideo.bean.Command.Cmd;
 import com.shgbit.android.heysharevideo.bean.CtrlStatus;

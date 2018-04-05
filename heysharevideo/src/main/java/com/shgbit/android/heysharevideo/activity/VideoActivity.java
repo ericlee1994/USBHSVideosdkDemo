@@ -322,6 +322,37 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mUSBMonitor != null) {
+            mUSBMonitor.register();
+            GBLog.e(TAG, "mUSBMonitor.register()");
+        }
+        GBLog.i(TAG, "onStart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        GBLog.i(TAG, "onResume");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        GBLog.i(TAG, "onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        releaseUsbMonitor();
+        mUVCCameraView = null;
+        super.onDestroy();
+        GBLog.i(TAG, "onDestroy");
+    }
+
     private final USBMonitor.OnDeviceConnectListener mOnDeviceConnectListener = new USBMonitor.OnDeviceConnectListener() {
         @Override
         public void onAttach(final UsbDevice device) {
@@ -346,12 +377,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         public void onDisconnect(final UsbDevice device, final USBMonitor.UsbControlBlock ctrlBlock) {
             // XXX you should check whether the comming device equal to camera device that currently using
             GBLog.e(TAG, "UVC onDisconnect!!!");
-            queueEvent(new Runnable() {
-                @Override
-                public void run() {
-                    releaseCamera();
-                }
-            }, 0);
+            releaseCamera();
+
         }
 
         @Override
@@ -409,7 +436,6 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private synchronized void releaseCamera() {
         if (mUVCCamera != null) {
             try {
-                mUVCCamera.stopPreview();
                 mUVCCamera.close();
                 mUVCCamera.destroy();
             } catch (final Exception e) {
@@ -425,9 +451,11 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     }
 
     private synchronized void releaseUsbMonitor() {
-        if (mUSBMonitor != null) {
-            mUSBMonitor.destroy();
-            mUSBMonitor = null;
+        synchronized (mSync) {
+            if (mUSBMonitor != null) {
+                mUSBMonitor.destroy();
+                mUSBMonitor = null;
+            }
         }
     }
 
@@ -861,8 +889,11 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                         final UVCCamera camera = new UVCCamera();
                         try {
                             camera.open(mCtrlBlock);
-//                        isActive = true;
                             Log.i(TAG, "supportedSize:" + camera.getSupportedSize());
+                            if (mPreviewSurface != null) {
+                                mPreviewSurface.release();
+                                mPreviewSurface = null;
+                            }
                             camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_YUYV);
                         } catch (final IllegalArgumentException e) {
                             // fallback to YUV mode
@@ -1894,19 +1925,23 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             nemoSDK.setNemoSDKListener(null);
             nemoSDK.setNemoKickOutListener(null);
 
-            releaseCamera();
             GBLog.e(TAG, "finish releaseCamera");
 
 
             synchronized (mSync) {
+                if (mUVCCamera != null) {
+                    mUVCCamera.stopPreview();
+                    GBLog.e(TAG, "mUVCCamera.stopPreview()");
+                }
                 if (mUSBMonitor != null) {
                     mUSBMonitor.unregister();
                     GBLog.e(TAG, "mUSBMonitor.unregister()");
                 }
             }
 
+            releaseCamera();
             nemoSDK.releaseCamera();
-            releaseUsbMonitor();
+
 
 //            queueEvent(new Runnable() {
 //                @Override
@@ -2258,33 +2293,6 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (mUSBMonitor != null) {
-            mUSBMonitor.register();
-        }
-        GBLog.i(TAG, "onStart");
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        GBLog.i(TAG, "onResume");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        GBLog.e(TAG, "onStop");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        GBLog.e(TAG, "onDestroy");
-    }
 
     @Override
     public void onClickPopBtn() {
