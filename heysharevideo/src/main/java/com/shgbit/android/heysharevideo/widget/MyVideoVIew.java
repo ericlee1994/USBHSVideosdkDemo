@@ -663,6 +663,7 @@ public class MyVideoVIew extends ViewGroup{
     public OpenGLTextureView getmLocalVideoCell() {
         for (int i = 0; i < mScreenList.size(); i++){
             if (mScreenList.get(i).getVideoInfo().isLocal()){
+                GBLog.e("VideoActivity", "getmLocalVideoCell:" + mScreenList.get(i).getVideoCellView());
                 return mScreenList.get(i).getVideoCellView();
             }
         }
@@ -688,7 +689,7 @@ public class MyVideoVIew extends ViewGroup{
         @Override
         public void run() {
             for (int i = 0; i < mScreenList.size(); i++){
-                if (mScreenList.get(i).getVideoInfo().isLocal()){
+                if (mScreenList.get(i).getVideoInfo() != null && mScreenList.get(i).getVideoInfo().isLocal()){
                     mScreenList.get(i).getVideoCellView().requestRender();
                     GBLog.d(TAG, mScreenList.get(i).getVideoInfo().getDataSourceID());
                     break;

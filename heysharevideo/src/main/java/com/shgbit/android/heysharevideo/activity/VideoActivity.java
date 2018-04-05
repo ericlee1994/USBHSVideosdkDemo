@@ -385,20 +385,12 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         public void onDettach(final UsbDevice device) {
             GBLog.e(TAG, "UVC onDettach!!!");
 
-            isUvcCamera = false;
+
 
             MeetingInfoManager.getInstance().LocalChange(false);
-
-            releaseCamera();
-
             isUvcCamera = false;
-            currentCamera = 0;
-            videoView.updateCamera(false);
-            NemoSDK.getInstance().updateCamera(false);
-            videoView.getmLocalVideoCell().notifyRender();
 
-            videoView.requestLocalFrame();
-            NemoSDK.getInstance().requestCamera();
+
 
 
         }
@@ -426,7 +418,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // FIXME
+
                 }
             });
         }
@@ -859,12 +851,12 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
         @Override
         public void receiveLocal() {
-
+            //todo receiveLocal
             GBLog.e(TAG, "receiveLocal, local camera has changed isFirstReceive:" + isFirstReceive + ", isUvc:" + isUvcCamera);
 
-            mUVCCameraView = videoView.getmLocalVideoCell();
 
             if (isFirstReceive) {
+                mUVCCameraView = videoView.getmLocalVideoCell();
                 videoView.requestLocalFrame();
                 nemoSDK.requestCamera();
                 isFirstReceive = false;
@@ -918,6 +910,17 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                         }
                     }
                 }, 0);
+            }else {
+
+                releaseCamera();
+
+                currentCamera = 0;
+                videoView.updateCamera(false);
+                NemoSDK.getInstance().updateCamera(false);
+                videoView.getmLocalVideoCell().notifyRender();
+
+                videoView.requestLocalFrame();
+                NemoSDK.getInstance().requestCamera();
             }
         }
     };
