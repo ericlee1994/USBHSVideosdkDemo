@@ -36,6 +36,7 @@ import com.shgbit.android.heysharevideo.json.QueryGroupInfo;
 import com.shgbit.android.heysharevideo.json.UpdateGroupInfo;
 import com.shgbit.android.heysharevideo.json.UserOrganization;
 import com.shgbit.android.heysharevideo.util.Common;
+import com.shgbit.android.heysharevideo.util.GBLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -254,7 +255,7 @@ public class GroupFragment extends Fragment {
                 }
             } else if (isLongClick == true && normal == false && isSearch ==false) {
                 if (mGroupList.get(position).getUserName().equals(LoginName)) {
-                    Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_21), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_21), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 if (mDeleteList == null) {
@@ -544,7 +545,7 @@ public class GroupFragment extends Fragment {
 
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
-            Log.i(TAG, "[user operation]: click EditText");
+            GBLog.i(TAG, "[user operation]: click EditText");
             if(s.toString() == null || s.toString().equals("")){
                 InputMethodManager imm1 = (InputMethodManager)getActivity().getSystemService(getActivity().INPUT_METHOD_SERVICE);
                 imm1.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);

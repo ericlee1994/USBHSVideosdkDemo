@@ -221,10 +221,10 @@ public class AllAddressListFragment extends Fragment {
 	}
 
 	private void updateData() {
-		Log.i(Tag, "updateData start");
+		GBLog.i(Tag, "updateData start");
 		if(index == MYGROUPS){
 			mContactUserOrganization = StructureDataCollector.getInstance().getGeneralContacts();
-			Log.i(Tag,"##########"+mContactUserOrganization.size());
+			GBLog.i(Tag,"##########"+mContactUserOrganization.size());
 			mGroup = StructureDataCollector.getInstance().getGpList();
 
 			mHorizontalLayout.setVisibility(View.GONE);
@@ -244,8 +244,8 @@ public class AllAddressListFragment extends Fragment {
 
 			mHorizontalLayout.setVisibility(View.GONE);
 			mCreateGroup.setVisibility(View.GONE);
-
-			if(screen_status.equals("vertical")){
+			
+			if(screen_status.equals("vertical") && mAddressUserOrganization != null){
 				mSideBar.setVisibility(View.VISIBLE);
 			}else {
 				mSideBar.setVisibility(View.GONE);
@@ -421,7 +421,7 @@ public class AllAddressListFragment extends Fragment {
 			InputMethodManager imm1 = (InputMethodManager)getActivity().getSystemService(getActivity().INPUT_METHOD_SERVICE);
 	        imm1.hideSoftInputFromWindow(v.getWindowToken(), 0);
 			if(v.getId()== R.id.my_groups || v.getId()== R.id.meeting_my_groups || v.getId()== R.id.horizontal_meeting_my_groups){
-				Log.i(Tag, "[user operation]: click mmy_groups");
+				GBLog.i(Tag, "[user operation]: click mmy_groups");
 				mmy_groups.setBackgroundResource(R.drawable.chang);
 				mmy_groups.setTextColor(getActivity().getResources().getColor(R.color.blue_color));
 				maddress_list.setTextColor(getActivity().getResources().getColor(R.color.white_color));
@@ -443,7 +443,7 @@ public class AllAddressListFragment extends Fragment {
 					}
 				});
 			}else if(v.getId()== R.id.address_list || v.getId()== R.id.meeting_address_list || v.getId()== R.id.horizontal_meeting_address_list){
-				Log.i(Tag, "[user operation]: click maddress_list");
+				GBLog.i(Tag, "[user operation]: click maddress_list");
 				maddress_list.setBackgroundResource(R.drawable.tongxun);
 				maddress_list.setTextColor(getActivity().getResources().getColor(R.color.blue_color));
 				morganization_structure.setTextColor(getActivity().getResources().getColor(R.color.white_color));
@@ -458,7 +458,7 @@ public class AllAddressListFragment extends Fragment {
 				mAddressListAdapter = new AddressListAdapter(getActivity(), mAddressUserOrganization, normal,screen_status);
 				mListView.setAdapter(mAddressListAdapter);
 			}else if(v.getId()== R.id.organization_structure || v.getId()== R.id.meeting_organization_structure || v.getId()== R.id.horizontal_meeting_organization_structure) {
-				Log.i(Tag, "[user operation]: click morganization_structure");
+				GBLog.i(Tag, "[user operation]: click morganization_structure");
 				morganization_structure.setBackgroundResource(R.drawable.zuzhi);
 				morganization_structure.setTextColor(getActivity().getResources().getColor(R.color.blue_color));
 				maddress_list.setBackgroundResource(0);
@@ -483,7 +483,7 @@ public class AllAddressListFragment extends Fragment {
 			}else if(v.getId()== R.id.parent_layout || v.getId()== R.id.meeting_parent_layout || v.getId()== R.id.horizontalmeeting_parent_layout) {
 
 			}else if(v.getId()== R.id.button_cancel || v.getId()== R.id.horizontal_button_cancel ) {
-				Log.i(Tag, "[user operation]: click mButtonCancel");
+				GBLog.i(Tag, "[user operation]: click mButtonCancel");
 				if (mExCallBack instanceof VideoCallBack) {
 
 					((VideoCallBack)mExCallBack).onDesFragment();
@@ -497,7 +497,7 @@ public class AllAddressListFragment extends Fragment {
 //					GBLog.i(Tag, "#####cancel2");
 //				}
 			}else if(v.getId()== R.id.button_conferencing || v.getId()== R.id.horizontal_button_conferencing ) {
-				Log.i(Tag, "[user operation]: click mButtonConferencing");
+				GBLog.i(Tag, "[user operation]: click mButtonConferencing");
 				if(mUData == null || mUData.size() <= 0){
 					Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.toast_add), Toast.LENGTH_SHORT).show();
 					return;
@@ -546,14 +546,14 @@ public class AllAddressListFragment extends Fragment {
 				}
               getActivity().getSupportFragmentManager().popBackStack();
 			}else if(v.getId()== R.id.img_status_frag_address){
-				Log.i(Tag, "[user operation]: click status");
+				GBLog.i(Tag, "[user operation]: click status");
 //				if (isVideoCallBack == false) {
 //					((MianCallBack)getActivity()).onSwitchStatus(mLlytTital);
 //				}
 			}else if(v.getId()== R.id.btn_creategroup){
 				showDialog("create",null);
 			}else if(v.getId()== R.id.btn_meeting_creategroup || v.getId()== R.id.btn_hormeeting_creategroup){
-				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_41), Toast.LENGTH_SHORT).show();
+				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_41), Toast.LENGTH_SHORT).show();
 			}
 		}
    };
@@ -578,7 +578,7 @@ public class AllAddressListFragment extends Fragment {
 			// 得到InputMethodManager的实例
 			imm2.hideSoftInputFromWindow(view.getWindowToken(), 0);
 			if(parent.getId()== R.id.recycle || parent.getId()== R.id.meeting_recycle || parent.getId()== R.id.horizontalconferencing_HorizontalListView){
-				Log.i(Tag, "[user operation]: click HorizontalListView");
+				GBLog.i(Tag, "[user operation]: click HorizontalListView");
 				for (int i = mRData.size() - 1; i > position; i--) {
 					mRData.remove(i);
 				}
@@ -593,7 +593,7 @@ public class AllAddressListFragment extends Fragment {
 
 				updateUserData();
 			}else if(parent.getId() == R.id.organization_listview || parent.getId() == R.id.meeting_listview || parent.getId() == R.id.horizontalconferencing_listview){
-				Log.i(Tag, "[user operation]: click listview");
+				GBLog.i(Tag, "[user operation]: click listview");
 				if(index==ORGANIZATIONSTRUCTURE){
 					if(mObjects.get(position) instanceof RootOrganization){
 						mRData.add((RootOrganization) mObjects.get(position));
@@ -610,12 +610,12 @@ public class AllAddressListFragment extends Fragment {
 						updateUserData();
 					}else{
 						if(normal==false){
-							Log.i(Tag,"##########222222222222");
+							GBLog.i(Tag,"##########222222222222");
 							mInCallBack.onPersonalAddressFragment((UserOrganization)mObjects.get(position));
-							Log.i(Tag,"##########333333333333");
+							GBLog.i(Tag,"##########333333333333");
 						}else {
 							if (((UserOrganization)mObjects.get(position)).getUserName().equals(SystemName)) {
-								Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_21), Toast.LENGTH_SHORT).show();
+								Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_21), Toast.LENGTH_SHORT).show();
 								return;
 							}
 
@@ -675,7 +675,7 @@ public class AllAddressListFragment extends Fragment {
 			mInCallBack.onPersonalAddressFragment(mOrganization.get(position));
 		}else{
 			if (mOrganization.get(position).getUserName().equals(SystemName)) {
-				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_21), Toast.LENGTH_SHORT).show();
+				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_21), Toast.LENGTH_SHORT).show();
 				return;
 			}
 
@@ -715,7 +715,7 @@ public class AllAddressListFragment extends Fragment {
 
 		@Override
 		public void onTouchingLetterChanged(String s) {
-			Log.i(Tag, "[user operation]: click OnTouchingLetterChanged");
+			GBLog.i(Tag, "[user operation]: click OnTouchingLetterChanged");
 			int position = mAddressListAdapter.getPositionForSection(s.charAt(0));
 			if(position != -1){
 				mListView.setSelection(position);
@@ -728,7 +728,7 @@ public class AllAddressListFragment extends Fragment {
     	@Override
 		public void onTextChanged(CharSequence s, int start, int before, int count) {
 			//当输入框里面的值为空，更新为原来的列表，否则为过滤数据列表
-    		Log.i(Tag, "[user operation]: click EditText");
+    		GBLog.i(Tag, "[user operation]: click EditText");
     		if(s.toString() == null || s.toString().equals("")){
     			InputMethodManager imm1 = (InputMethodManager)getActivity().getSystemService(getActivity().INPUT_METHOD_SERVICE);
     	        imm1.hideSoftInputFromWindow(mEditText.getWindowToken(), 0);
@@ -825,6 +825,13 @@ public class AllAddressListFragment extends Fragment {
 	}
 
 	private void updateContactData() {
+		if(mGroup == null){
+			mGroup = new ArrayList<>();
+		}
+
+		if(mContactUserOrganization == null){
+			mContactUOrganization = new UserOrganization();
+		}
 		if(mGroupAdapter == null){
 			mGroupAdapter = new GroupAdapter(getActivity(),mGroup,mContactUserOrganization,normal,mUData);
 			mListView.setAdapter(mGroupAdapter);
@@ -901,9 +908,12 @@ public class AllAddressListFragment extends Fragment {
 	}
 
 	private void updateAddressData() {
-		for(int i = 0 ; i < mAddressUserOrganization.size() ; i++){
-			String pinyin = CharacterParser.getInstance().getSelling(mAddressUserOrganization.get(i).getDisplayName());
-			String sortString = pinyin.substring(0, 1).toUpperCase();
+		if(mAddressUserOrganization == null){
+			mAddressUserOrganization = new ArrayList<>();
+		}else {
+			for(int i = 0 ; i < mAddressUserOrganization.size() ; i++){
+				String pinyin = CharacterParser.getInstance().getSelling(mAddressUserOrganization.get(i).getDisplayName());
+				String sortString = pinyin.substring(0, 1).toUpperCase();
 
 			// 正则表达式，判断首字母是否是英文字母
 			if(sortString.matches("[A-Z]")){
@@ -914,6 +924,7 @@ public class AllAddressListFragment extends Fragment {
     	}
 		Collections.sort(mAddressUserOrganization, new PinyinComparator());
 
+		}
 		if (mAddressListAdapter == null) {
 		   mAddressListAdapter = new AddressListAdapter(getActivity(), mAddressUserOrganization, normal,screen_status);
 		   mListView.setAdapter(mAddressListAdapter);
@@ -946,9 +957,17 @@ public class AllAddressListFragment extends Fragment {
 		}
 
 		if (mRData != null && mRData.size() > 0) {
-			if (mRData.get(mRData.size() - 1).getUserOrganizations() != null) {
-				for (UserOrganization userOrganization : mRData.get(mRData.size() - 1).getUserOrganizations()) {
-					mObjects.add(userOrganization);
+			if(mRData.get(mRData.size() - 1) != null) {
+				if (mRData.get(mRData.size() - 1).getUserOrganizations() != null) {
+					for (UserOrganization userOrganization : mRData.get(mRData.size() - 1).getUserOrganizations()) {
+						mObjects.add(userOrganization);
+					}
+				}
+
+				if (mRData.get(mRData.size() - 1).getRootOrganizations() != null) {
+					for (RootOrganization rOrganization : mRData.get(mRData.size() - 1).getRootOrganizations()) {
+						mObjects.add(rOrganization);
+					}
 				}
 			}
 
@@ -956,11 +975,7 @@ public class AllAddressListFragment extends Fragment {
 //			Collections.sort(mObjects, new PinyinComparator2());
 //			Collections.sort(mObjects, new StatusComparator());
 
-			if (mRData.get(mRData.size() - 1).getRootOrganizations() != null) {
-				for (RootOrganization rOrganization : mRData.get(mRData.size() - 1).getRootOrganizations()) {
-					mObjects.add(rOrganization);
-				}
-			}
+
 		}
 
 		if (mReserverUser != null) {
@@ -1154,18 +1169,24 @@ public class AllAddressListFragment extends Fragment {
 	private void updateOrganizationData () {
 		 if (mRData == null) {
 			 mRData = new ArrayList<RootOrganization>();
-			 mRData.add(mRootOrganization);
-		 } else {
-			 for (int i = 0; i < mRData.size(); i++) {
-				 RootOrganization rootOrganization = itRtOrganization(mRData.get(i).getOrganizationId(), mRootOrganization);
-				 if (rootOrganization != null) {
-					 mRData.set(i, rootOrganization);
-				 } else {
-					 break;
-				 }
+			 if(mRootOrganization != null){
+				 mRData.add(mRootOrganization);
 			 }
+		 } else {
+		 	if(mRootOrganization != null) {
+				for (int i = 0; i < mRData.size(); i++) {
+					RootOrganization rootOrganization = itRtOrganization(mRData.get(i).getOrganizationId(), mRootOrganization);
+					if (rootOrganization != null) {
+						mRData.set(i, rootOrganization);
+					} else {
+						continue;
+					}
+				}
+			}else {
+				mRData = new ArrayList<RootOrganization>();
+			}
 		 }
-
+		 
 		 if (mHorizontalListViewAdapter == null) {
 			 mHorizontalListViewAdapter = new HorizontalAdapter(getActivity(), mRData);
 			 mHorizontalListView.setAdapter(mHorizontalListViewAdapter);

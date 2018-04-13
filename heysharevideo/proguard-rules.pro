@@ -59,6 +59,7 @@
 -keep class android.http.b{*;}
 -keep class vulture.module.call.**{*;}
 -keep class android.log.**{*;}
+-keep class com.wa.util.**{*;}
 
 -dontwarn com.ainemo.a.**
 -dontwarn com.ainemo.sdk.module.**
@@ -72,10 +73,13 @@
     }
 
 -keep class com.shgbit.android.heysharevideo.activity.HSVideoSDK{*;}
+-keep class com.shgbit.android.heysharevideo.util.GBLog{*;}
 -keep class com.shgbit.android.heysharevideo.bean.**{*;}
 -keep class com.shgbit.android.heysharevideo.json.**{*;}
 -keep class com.shgbit.android.heysharevideo.addressaar.AddressCallBack{*;}
 -keep class com.shgbit.android.heysharevideo.callback.HSSDKListener{*;}
+-keep class com.shgbit.android.heysharevideo.callback.HSSDKInstantListener{*;}
+-keep class com.shgbit.android.heysharevideo.callback.HSSDKReserveListener{*;}
 -keep class com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager{*;}
 
 #---------------------------------默认保留区---------------------------------

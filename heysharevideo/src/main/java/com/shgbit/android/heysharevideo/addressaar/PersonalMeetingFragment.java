@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +31,7 @@ import com.shgbit.android.heysharevideo.json.TimeoutInfo;
 import com.shgbit.android.heysharevideo.json.User;
 import com.shgbit.android.heysharevideo.json.UserOrganization;
 import com.shgbit.android.heysharevideo.util.Common;
+import com.shgbit.android.heysharevideo.util.GBLog;
 
 
 public class PersonalMeetingFragment extends Fragment {
@@ -95,7 +95,7 @@ public class PersonalMeetingFragment extends Fragment {
 				try {
 					Finalize ();
 				} catch (Throwable e) {
-					Log.e(Tag,"mClickListener Throwable: " + "");
+					GBLog.e(Tag,"mClickListener Throwable: " + "");
 				}
 				getActivity().getSupportFragmentManager().popBackStack();
 //				Syntony.getInstance().des3();
@@ -117,12 +117,12 @@ public class PersonalMeetingFragment extends Fragment {
     			
     			@Override
     			public boolean onError(MediaPlayer mp, int what, int extra) {
-    				Log.e(Tag, "MediaPlayer - Error code: " + what + ", Extra code: " + extra);
+    				GBLog.e(Tag, "MediaPlayer - Error code: " + what + ", Extra code: " + extra);
     				return false;
     			}
     		});
     	} catch (Throwable e) {
-    		Log.e(Tag, "initMediaPlayer Throwable:" + e.toString());
+    		GBLog.e(Tag, "initMediaPlayer Throwable:" + e.toString());
     	}
     }
 
@@ -130,12 +130,12 @@ public class PersonalMeetingFragment extends Fragment {
 		public void handleMessage(Message msg) {
 		switch (msg.what) {
 		case 1:
-			toast= Toast.makeText(mContext, mContext.getResources().getString(R.string.tip_33), 1999);
+			toast= Toast.makeText(mContext, mContext.getResources().getString(R.string.tips_33), 1999);
 			toast.show();
 			sendEmptyMessageDelayed(3, 2000);
 			break;
 		case 2:
-			toast= Toast.makeText(mContext, mContext.getResources().getString(R.string.tip_34), 1999);
+			toast= Toast.makeText(mContext, mContext.getResources().getString(R.string.tips_34), 1999);
 			toast.show();
 			sendEmptyMessageDelayed(3, 2000);
 		    break;
@@ -199,7 +199,7 @@ public class PersonalMeetingFragment extends Fragment {
 	}
 
 	public void showToast(){
-		toast = Toast.makeText(mContext, mContext.getResources().getString(R.string.tip_3), Toast.LENGTH_SHORT);
+		toast = Toast.makeText(mContext, mContext.getResources().getString(R.string.tips_3), Toast.LENGTH_SHORT);
 		toast.show();
 	}
 	
@@ -245,7 +245,7 @@ public class PersonalMeetingFragment extends Fragment {
 			thread.start();
 			mMediaPlayer.start();
 		} catch (Throwable e) {
-			Log.e(Tag, "startThread Throwable:" + "");
+			GBLog.e(Tag, "startThread Throwable:" + "");
 		}
 	}
 	
@@ -264,7 +264,7 @@ public class PersonalMeetingFragment extends Fragment {
 				mMediaPlayer = null;
 			}
 			} catch (Throwable e) {
-				Log.e(Tag, "finalize Throwable: " + "");
+				GBLog.e(Tag, "finalize Throwable: " + "");
 			}
 	}
 
@@ -280,20 +280,20 @@ public class PersonalMeetingFragment extends Fragment {
 				try {
 					result = ServerInteractManager.getInstance().getSyncGetMeeting(meeting.getMeetingId());
 				} catch (Throwable e) {
-					Log.e(Tag,"MyThread Throwable: " + "");
+					GBLog.e(Tag,"MyThread Throwable: " + "");
 				}
 
 				MeetingDetail md = null;
 				try {
 					md = new Gson().fromJson(result, MeetingDetail.class);
 				} catch (Throwable e) {
-					Log.e(Tag,"MyThread Throwable: " + "");
+					GBLog.e(Tag,"MyThread Throwable: " + "");
 				}
 				if(md != null && mPerson != null){
 					if (md.getMeeting().getUsers() != null) {
 						for (User user : md.getMeeting().getUsers()) {
 							if (user.getUserName().equals(mPerson.getUserName())) {
-								Log.e(Tag,"user:"+user.getDisplayName()+"----user status:"+user.getSessionType().getMobileState().getStatus());
+								GBLog.e(Tag,"user:"+user.getDisplayName()+"----user status:"+user.getSessionType().getMobileState().getStatus());
 								if (user.getSessionType().getMobileState().getStatus().equalsIgnoreCase("joined")) {
 									Intent intent = new Intent();
 									intent.setClass(getActivity(),VideoActivity.class);

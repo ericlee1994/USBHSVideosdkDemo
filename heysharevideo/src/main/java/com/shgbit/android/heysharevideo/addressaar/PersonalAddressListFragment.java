@@ -141,7 +141,7 @@ public class PersonalAddressListFragment extends Fragment {
 				boolean isperson=true;
 				
 				if(LoginName.equals(mInformatinal.getUserName())){
-					Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_26), Toast.LENGTH_SHORT).show();
+					Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_26), Toast.LENGTH_SHORT).show();
 					return;
 				}else{
 						mInCallBack.onPersonalMeeting(user,isperson);
@@ -161,12 +161,12 @@ public class PersonalAddressListFragment extends Fragment {
 				@Override
 				public void onClick(View arg0) {
 					if(mInformatinal.getUserName().equals(LoginName)){
-						Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_21), Toast.LENGTH_SHORT).show();
+						Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_21), Toast.LENGTH_SHORT).show();
 					}else{
 						if(isCollect == false){
 							mBtnCollect.setBackgroundResource(R.drawable.collect_pre);
 							mStatusCollect.setText(getActivity().getResources().getString(R.string.cancle_collext));
-							Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_37), Toast.LENGTH_SHORT).show();
+							Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_37), Toast.LENGTH_SHORT).show();
 
 							isCollect = true;
 							mInformatinal.setCollect(true);
@@ -176,7 +176,7 @@ public class PersonalAddressListFragment extends Fragment {
 						} else {
 							mBtnCollect.setBackgroundResource(R.drawable.collect_nor);
 							mStatusCollect.setText(getActivity().getResources().getString(R.string.collect));
-							Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tip_38), Toast.LENGTH_SHORT).show();
+							Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.tips_38), Toast.LENGTH_SHORT).show();
 
 							isCollect = false;
 							mInformatinal.setCollect(false);

@@ -8,13 +8,11 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ainemo.sdk.otf.NemoSDK;
 import com.ainemo.sdk.otf.OpenGLTextureView;
 import com.shgbit.android.heysharevideo.bean.DISPLAY_MODE;
 import com.shgbit.android.heysharevideo.bean.DisplayType;
 import com.shgbit.android.heysharevideo.bean.MemberInfo;
 import com.shgbit.android.heysharevideo.bean.VI;
-import com.shgbit.android.heysharevideo.bean.VideoCellView;
 import com.shgbit.android.heysharevideo.callback.IVideoViewCallBack;
 import com.shgbit.android.heysharevideo.callback.IViewLayoutCallBack;
 import com.shgbit.android.heysharevideo.contact.MeetingInfoManager;
@@ -40,8 +38,6 @@ public class MyVideoVIew extends ViewGroup{
     private ArrayList<VI> otherList = new ArrayList<VI>();
     private IVideoViewCallBack iVideoViewCallBack;
     private Handler handler = new Handler();
-//    private OpenGLTextureView localVideoView;
-    private CellView localCV;
 
     private final int UPDATEVIEW = 0x001;
     private final int HIDELAYOUT = 0x002;
@@ -49,9 +45,6 @@ public class MyVideoVIew extends ViewGroup{
 
     private boolean isInVoiceMode = false;
     private boolean isFirstPIP = false;
-    private boolean hasDataChanged = false;
-    private boolean isUVC;
-    private boolean isFirstInitLocal = true;
     public static boolean isMove = true;
     private int flag = 0;
 
@@ -102,11 +95,6 @@ public class MyVideoVIew extends ViewGroup{
             addView(viewLayout);
             mScreenList.add(viewLayout);
         }
-
-//        localVideoView = new OpenGLTextureView(getContext(),true);
-//        localVideoView.setSourceID(NemoSDK.getInstance().getLocalVideoStreamID());
-//        localVideoView.setContent(false);
-//        addView(localVideoView);
     }
 
     public void closeLocalMic(boolean hasVoice){
@@ -220,7 +208,7 @@ public class MyVideoVIew extends ViewGroup{
                     List<MemberInfo> mMember = (List<MemberInfo>) msg.obj;
                     flag = 0;
                     GBLog.i(TAG, "mMember.size()=" + mMember.size());
-                    for (int i = 0; i < mScreenList.size(); i++) {
+                    for (int i = 0; i < mScreenList.size(); i++){
                         VI vi = null;
                         if (i < mMember.size()) {
                             vi = new VI();
@@ -252,25 +240,7 @@ public class MyVideoVIew extends ViewGroup{
 //                            mScreenList.get(i).endPizhu();
 //                        }
                     }
-                        for (int i = 0; i < mScreenList.size(); i++) {
-                            mScreenList.get(i).getVideoCellView().releaseRender();
-                            mScreenList.get(i).getVideoCellView().notifyRender();
 
-                        if (mScreenList.get(i).getVideoInfo() != null) {
-
-                            if (mScreenList.get(i).getVideoInfo().isLocal()) {
-                                if (isFirstInitLocal){
-                                    isUVC = !mScreenList.get(i).getVideoInfo().isUVC();
-                                    isFirstInitLocal = false;
-                                }
-
-                                if (!mScreenList.get(i).getVideoInfo().isUVC() == isUVC){
-                                    iVideoViewCallBack.receiveLocal();
-                                    isUVC = !isUVC;
-                                }
-                            }
-                        }
-                    }
                     requestLayout();
                     requestRender();
                     break;
@@ -398,11 +368,6 @@ public class MyVideoVIew extends ViewGroup{
                         vr = getWidth() - x;
                         vb = getHeight();
                         break;
-//                        vl = x;
-//                        vt = x;
-//                        vr = getWidth() * 5 / 6 - x;
-//                        vb = getHeight();
-//                        break;
                     default:
                         break;
                 }
@@ -601,7 +566,7 @@ public class MyVideoVIew extends ViewGroup{
                         continue;
                     }
                     if (mScreenList.get(i).getVideoCellView() != null && !mScreenList.get(i).getVideoInfo().isLocal()){
-                        mScreenList.get(i).getVideoCellView().updateCamrea(false);
+//                        mScreenList.get(i).getVideoCellView().updateCamrea(false);
                         mScreenList.get(i).getVideoCellView().requestRender();
                         GBLog.d(TAG, mScreenList.get(i).getVideoInfo().getDataSourceID());
                     }
@@ -642,9 +607,6 @@ public class MyVideoVIew extends ViewGroup{
         handler.removeCallbacksAndMessages(null);
     }
 
-    public ArrayList<VI> getVis() {
-        return otherList;
-    }
 
     public void updateCamera(boolean isUvc) {
 
@@ -655,21 +617,14 @@ public class MyVideoVIew extends ViewGroup{
             }
         }
     }
-
-//        if (localVideoView != null) {
-//            localVideoView.updateCamrea(isUvc);
-//        }
-
     public OpenGLTextureView getmLocalVideoCell() {
         for (int i = 0; i < mScreenList.size(); i++){
-            if (mScreenList.get(i).getVideoInfo().isLocal()){
-                GBLog.e("VideoActivity", "getmLocalVideoCell:" + mScreenList.get(i).getVideoCellView());
+            if (mScreenList.get(i).getVideoInfo() != null && mScreenList.get(i).getVideoInfo().isLocal() ){
                 return mScreenList.get(i).getVideoCellView();
             }
         }
         return null;
     }
-
     public void stopLocalFrameRender() {
         handler.removeCallbacks(drawLocalVideoFrameRunnable);
     }
@@ -695,12 +650,7 @@ public class MyVideoVIew extends ViewGroup{
                     break;
                 }
             }
-//            if (localVideoView != null) {
-//                localVideoView.requestRender();
-//            }
             requestLocalVideoRender();
         }
     };
-
-
 }

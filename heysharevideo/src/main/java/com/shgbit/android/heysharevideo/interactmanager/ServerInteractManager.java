@@ -1,5 +1,6 @@
 package com.shgbit.android.heysharevideo.interactmanager;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.text.format.Time;
 import android.util.Log;
@@ -59,6 +60,7 @@ import com.shgbit.android.heysharevideo.json.ValidateInfo;
 import com.shgbit.android.heysharevideo.json.XiaoYuConfig;
 import com.shgbit.android.heysharevideo.json.YunDesktop;
 import com.shgbit.android.heysharevideo.util.GBLog;
+import com.shgbit.android.heysharevideo.util.ToastUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -95,6 +97,7 @@ public class ServerInteractManager {
 	private String mServiceUrl = "";
 	private String mSessionId = "";
 	private String mUserName = "";
+	private Context mContext;
 
 	private OnlineUser[] onlineUsers;
 	private InvitedMeeting mInvitedMeeting;
@@ -206,14 +209,15 @@ public class ServerInteractManager {
 		return instance;
 	}
 
-	public void init (String serviceurl, String userName) {
+	public void init (String serviceurl, String userName, Context context) {
 		if (serviceurl == null || userName == null) {
 			return;
 		}
 
 		mServiceUrl = serviceurl;
 		mUserName = userName;
-		StructureDataCollector.getInstance().init(mUserName);
+		mContext = context;
+		StructureDataCollector.getInstance().init(mUserName, mContext);
 	}
 	@Override
 	public void finalize () {
@@ -241,7 +245,7 @@ public class ServerInteractManager {
 			instance = null;
 
 		} catch (Throwable e) {
-			Log.e(TAG, "finalize Throwable: " + e.toString());
+			GBLog.e(TAG, "finalize Throwable: " + e.toString());
 		}
 	}
 
@@ -255,7 +259,7 @@ public class ServerInteractManager {
 				mHeartBeatThread = null;
 			}
 		} catch (Throwable e) {
-			Log.e(TAG, "finalize heartbeat Throwable:" + e.toString());
+			GBLog.e(TAG, "finalize heartbeat Throwable:" + e.toString());
 		}
 			
 		mHeartBeatThread = new HeartBeatThread();
@@ -297,7 +301,7 @@ public class ServerInteractManager {
 			object.addProperty("data", data);
 			object.addProperty("sessionType", SessionType);
 		} catch (Throwable e) {
-			Log.e(TAG, "Add JSONObject Throwable: " + e.toString());
+			GBLog.e(TAG, "Add JSONObject Throwable: " + e.toString());
 		}
 		
 		new PostTask(url, object.toString(), INTERACTTYPE.LOGIN).execute();
@@ -316,7 +320,7 @@ public class ServerInteractManager {
 			object.addProperty("data", data);
 			object.addProperty("sessionId", mSessionId);
 		} catch (Throwable e) {
-			Log.e(TAG, "Add JSONObject Throwable: " + e.toString());
+			GBLog.e(TAG, "Add JSONObject Throwable: " + e.toString());
 		}
 		
 		new PostTask(url, object.toString(), INTERACTTYPE.CHECKPWD).execute();
@@ -335,7 +339,7 @@ public class ServerInteractManager {
 			object.addProperty("data", data);
 			object.addProperty("sessionId", mSessionId);
 		} catch (Throwable e) {
-			Log.e(TAG, "Add JSONObject Throwable: " + e.toString());
+			GBLog.e(TAG, "Add JSONObject Throwable: " + e.toString());
 		}
 		
 		new PostTask(url, object.toString(), INTERACTTYPE.MOTIFYPWD).execute();
@@ -347,7 +351,7 @@ public class ServerInteractManager {
 			jObject.addProperty("userName", li.getUserName());
 			jObject.addProperty("password", li.getPassword());
 		} catch (Throwable e) {
-			Log.e(TAG, "Add JSONObject Throwable: " + e.toString());
+			GBLog.e(TAG, "Add JSONObject Throwable: " + e.toString());
 		}
 		return GBUE1.encode(jObject.toString(), secret);
 	}
@@ -650,7 +654,7 @@ public class ServerInteractManager {
 		public void run() {
 			try {
 				while (mHeartBeatThreadLooper) {
-					Log.i(TAG, "HeartBeatThread is running !!!");
+					GBLog.i(TAG, "HeartBeatThread is running !!!");
 					
 					 Time time = new Time();
 					 time.setToNow();
@@ -678,7 +682,7 @@ public class ServerInteractManager {
 							 }
 						 }
 					 } catch (Throwable e) {
-						 Log.e(TAG, "Get meetings Throwable: " + e.toString());
+						 GBLog.e(TAG, "Get meetings Throwable: " + e.toString());
 					 }
 					 
 					 String url2 = mServiceUrl + "/heartbeat?userName=" + mUserName + "&sessionId=" + mSessionId
@@ -774,7 +778,7 @@ public class ServerInteractManager {
 							 }
 						 }
 					 } catch (Throwable e) {
-						 Log.e(TAG, "HeartBeatThread Throwable1:" + e.toString());
+						 GBLog.e(TAG, "HeartBeatThread Throwable1:" + e.toString());
 					 }
 					 
 					 getOnline();
@@ -789,7 +793,7 @@ public class ServerInteractManager {
 					}
 				}
 			} catch (Throwable e) {
-				Log.e(TAG, "HeartBeatThread Throwable2:" + e.toString());
+				GBLog.e(TAG, "HeartBeatThread Throwable2:" + e.toString());
 			}
 			super.run();
 		}
@@ -810,7 +814,7 @@ public class ServerInteractManager {
 			try {
 				return httpPost(mUrl,mObject);
 			} catch (Throwable e) {
-				Log.e(TAG, "doInBackground Throwable: " + e.toString());
+				GBLog.e(TAG, "doInBackground Throwable: " + e.toString());
 				return "";
 			}
 		}
@@ -826,7 +830,7 @@ public class ServerInteractManager {
 					try {
 						lr = new Gson().fromJson(result, LoginResponse.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse LoginResponse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse LoginResponse Throwable: " + e.toString());
 					}
 
 					if (lr == null || lr.getResult().equalsIgnoreCase("failed") == true) {
@@ -856,7 +860,7 @@ public class ServerInteractManager {
 						cpwd = new Gson().fromJson(result, CheckPwdResponse.class);
 
 					} catch (Throwable e) {
-						Log.e(TAG, "parse CheckPwdResponse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse CheckPwdResponse Throwable: " + e.toString());
 					}
 
 					if (cpwd == null || cpwd.getResult().equalsIgnoreCase("failed") == true) {
@@ -881,7 +885,7 @@ public class ServerInteractManager {
 					try {
 						cp = new Gson().fromJson(result, CheckPwdResponse.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse MotifyPwdResponse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse MotifyPwdResponse Throwable: " + e.toString());
 					}
 
 					if (cp == null || cp.getResult().equalsIgnoreCase("failed") == true) {
@@ -906,7 +910,7 @@ public class ServerInteractManager {
 					try {
 						r = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r == null || r.getResult().equalsIgnoreCase("failed") == true) {
@@ -931,7 +935,7 @@ public class ServerInteractManager {
 					try {
 						ci = new Gson().fromJson(result, CreateInfo.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse CreateInfo Throwable: " + e.toString());
+						GBLog.e(TAG, "parse CreateInfo Throwable: " + e.toString());
 					}
 
 					if (ci == null || ci.getResult().equalsIgnoreCase("failed") == true) {
@@ -956,7 +960,7 @@ public class ServerInteractManager {
 					try {
 						r2 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r2 == null || r2.getResult().equalsIgnoreCase("failed") == true) {
@@ -981,7 +985,7 @@ public class ServerInteractManager {
 					try {
 						r3 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r3 == null || r3.getResult().equalsIgnoreCase("failed") == true) {
@@ -1006,7 +1010,7 @@ public class ServerInteractManager {
 					try {
 						r4 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r4 == null || r4.getResult().equalsIgnoreCase("failed") == true) {
@@ -1031,7 +1035,7 @@ public class ServerInteractManager {
 					try {
 						r5 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r5 == null || r5.getResult().equalsIgnoreCase("failed") == true) {
@@ -1056,7 +1060,7 @@ public class ServerInteractManager {
 					try {
 						r6 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r6 == null || r6.getResult().equalsIgnoreCase("failed") == true) {
@@ -1081,7 +1085,7 @@ public class ServerInteractManager {
 					try {
 						syr = new Gson().fromJson(result, StartYunDeskResponse.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse StartYunDeskResponse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse StartYunDeskResponse Throwable: " + e.toString());
 					}
 
 					if (syr == null || syr.getResult().equalsIgnoreCase("failed") == true) {
@@ -1106,7 +1110,7 @@ public class ServerInteractManager {
 					try {
 						eyr = new Gson().fromJson(result, EndYunDeskResponse.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse EndYunDeskResponse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse EndYunDeskResponse Throwable: " + e.toString());
 					}
 
 					if (eyr == null || eyr.getResult().equalsIgnoreCase("failed") == true) {
@@ -1131,7 +1135,7 @@ public class ServerInteractManager {
 					try {
 						rr = new Gson().fromJson(result, ReserveRepsonse.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse ReserveRepsonse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse ReserveRepsonse Throwable: " + e.toString());
 					}
 
 					if (rr == null || rr.getResult().equalsIgnoreCase("failed") == true) {
@@ -1156,7 +1160,7 @@ public class ServerInteractManager {
 					try {
 						r7 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r7 == null || r7.getResult().equalsIgnoreCase("failed") == true) {
@@ -1181,7 +1185,7 @@ public class ServerInteractManager {
 					try {
 						r8 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r8 == null || r8.getResult().equalsIgnoreCase("failed") == true) {
@@ -1206,7 +1210,7 @@ public class ServerInteractManager {
 					try {
 						r9 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r9 == null || r9.getResult().equalsIgnoreCase("failed") == true) {
@@ -1233,7 +1237,7 @@ public class ServerInteractManager {
 					try {
 						r10 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r10 == null || r10.getResult().equalsIgnoreCase("failed") == true) {
@@ -1253,14 +1257,14 @@ public class ServerInteractManager {
 					}
 					break;
 				case SENDMSG:
-					Log.i(TAG, "send message result: " + result.toString());
+					GBLog.i(TAG, "send message result: " + result.toString());
 					break;
 				case CREATEGROUP:
 					Result r11 = null;
 					try {
 						r11 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r11 == null || r11.getResult().equalsIgnoreCase("failed") == true) {
@@ -1285,7 +1289,7 @@ public class ServerInteractManager {
 					try {
 						r12 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r12 == null || r12.getResult().equalsIgnoreCase("failed") == true) {
@@ -1310,7 +1314,7 @@ public class ServerInteractManager {
 					try {
 						r13 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r13 == null || r13.getResult().equalsIgnoreCase("failed") == true) {
@@ -1335,7 +1339,7 @@ public class ServerInteractManager {
 					try {
 						qgr = new Gson().fromJson(result, QueryGroupResponse.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse QueryGroupResponse Throwable: " + e.toString());
+						GBLog.e(TAG, "parse QueryGroupResponse Throwable: " + e.toString());
 					}
 
 					if (qgr == null || qgr.getResult().equalsIgnoreCase("failed") == true) {
@@ -1360,7 +1364,7 @@ public class ServerInteractManager {
 					try {
 						r14 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 
@@ -1386,7 +1390,7 @@ public class ServerInteractManager {
 					try {
 						r15 = new Gson().fromJson(result, Result.class);
 					}catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (r15 == null || r15.getResult().equalsIgnoreCase("failed") == true) {
@@ -1410,7 +1414,7 @@ public class ServerInteractManager {
 					try {
 						result1 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (result1 == null || result1.getResult().equalsIgnoreCase("failed") == true) {
@@ -1434,7 +1438,7 @@ public class ServerInteractManager {
 					try {
 						result2 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 					if (result2 == null || result2.getResult().equalsIgnoreCase("failed") == true) {
@@ -1458,7 +1462,7 @@ public class ServerInteractManager {
 					try {
 						result3 = new Gson().fromJson(result, Result.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Result Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 					}
 
 						if (result3 == null || result3.getResult().equalsIgnoreCase("false") == true) {
@@ -1482,13 +1486,13 @@ public class ServerInteractManager {
 						try {
 							result4 = new Gson().fromJson(result, Result.class);
 						} catch (Throwable e) {
-							Log.e(TAG, "parse Result Throwable: " + e.toString());
+							GBLog.e(TAG, "parse Result Throwable: " + e.toString());
 						}
 
 						if (result4 == null) {
-							Log.e(TAG,"#### null");
+							GBLog.e(TAG,"#### null");
 						} else {
-							Log.e(TAG,"####" + result4.getResult());
+							GBLog.e(TAG,"####" + result4.getResult());
 						}
 
 						break;
@@ -1496,7 +1500,7 @@ public class ServerInteractManager {
 						break;
 				}
 			} catch (Throwable e) {
-				Log.e(TAG, "onPostExecute Throwable:" + e.toString());
+				GBLog.e(TAG, "onPostExecute Throwable:" + e.toString());
 			}
 		}
 	}
@@ -1508,7 +1512,7 @@ public class ServerInteractManager {
 			Response response = mOkHttpClient.newCall(request).execute();
 			result = response.body().string();
 		}catch (Throwable e) {
-			Log.e(TAG, "httpGet Throwable:" + e.toString());
+			GBLog.e(TAG, "httpGet Throwable:" + e.toString());
 			if (e.toString().toLowerCase().contains("timeout")) {
 				Result re = new Result();
 				re.setResult("failed");
@@ -1526,7 +1530,7 @@ public class ServerInteractManager {
 	        Response response = mOkHttpClient.newCall(request).execute();
 	        result = response.body().string();
 		}catch (Throwable e) {
-			Log.e(TAG, "httpPost Throwable:" + e.toString());
+			GBLog.e(TAG, "httpPost Throwable:" + e.toString());
 			if (e.toString().toLowerCase().contains("timeout")) {
 				Result re = new Result();
 				re.setResult("failed");
@@ -1553,7 +1557,7 @@ public class ServerInteractManager {
 				
 				
 			} catch (Throwable e) {
-				Log.e(TAG, "doInBackground Throwable: " + e.toString());
+				GBLog.e(TAG, "doInBackground Throwable: " + e.toString());
 			}
 			return "";
 		}
@@ -1568,7 +1572,7 @@ public class ServerInteractManager {
 					try {
 						config = new Gson().fromJson(result, SystemConfig.class);
 					}catch (Throwable e){
-						Log.e(TAG, "parse Serverconfig Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Serverconfig Throwable: " + e.toString());
 					}
 					
 					XiaoYuConfig xiyuConfig = null;
@@ -1581,23 +1585,30 @@ public class ServerInteractManager {
 							hotfixConfig = config.getServiceSettings().getGAHFSConfig();
 							pushConfig = config.getServiceSettings().getGBPushConfig();
 						}
+						for (ServerConfigCallback callback : mConfigCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.configXiaoyu(xiyuConfig, true);
+							callback.configHotfix(hotfixConfig);
+							callback.configPush(pushConfig);
+						}
+					}else {
+						for (ServerConfigCallback callback : mConfigCallbacks) {
+							if (callback == null) {
+								continue;
+							}
+							callback.configXiaoyu(xiyuConfig, false);
+						}
 					}
 
-					for (ServerConfigCallback callback : mConfigCallbacks) {
-						if (callback == null) {
-							continue;
-						}
-						callback.configXiaoyu(xiyuConfig);
-						callback.configHotfix(hotfixConfig);
-						callback.configPush(pushConfig);
-					}
 					break;
 				case CONTACTS:
 					Contacts contacts = null;
 					try {
 						contacts = new Gson().fromJson(result, Contacts.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Contacts Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Contacts Throwable: " + e.toString());
 					}
 					
 					if (contacts != null && contacts.getResult().equalsIgnoreCase("success") == true) {
@@ -1614,7 +1625,7 @@ public class ServerInteractManager {
 					try {
 						online = new Gson().fromJson(result, Online.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse Online Throwable: " + e.toString());
+						GBLog.e(TAG, "parse Online Throwable: " + e.toString());
 					}
 					
 					if (online != null && online.getResult().equalsIgnoreCase("success") == true) {
@@ -1666,7 +1677,7 @@ public class ServerInteractManager {
 					try {
 						md = new Gson().fromJson(result, MeetingDetail.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse currentmeeting Throwable: " + e.toString());
+						GBLog.e(TAG, "parse currentmeeting Throwable: " + e.toString());
 					}
 					
 					if (md != null && md.getResult().equalsIgnoreCase("success") == true) {
@@ -1685,7 +1696,7 @@ public class ServerInteractManager {
 					try {
 						fc = new Gson().fromJson(result, FrequentContactsInfoSet.class);
 					} catch (Throwable e) {
-						Log.e(TAG, "parse frequentcontacts Throwable: " + e.toString());
+						GBLog.e(TAG, "parse frequentcontacts Throwable: " + e.toString());
 					}
 					if (fc != null && fc.getResult().equalsIgnoreCase("success") == true) {
 						for (ServerAddressCallback callback : mAddressCallbacks) {
@@ -1700,7 +1711,7 @@ public class ServerInteractManager {
 					break;
 				}
 			} catch (Throwable e) {
-				Log.e(TAG, "onPostExecute Throwable: " + e.toString());
+				GBLog.e(TAG, "onPostExecute Throwable: " + e.toString());
 			}
 		}
 	}

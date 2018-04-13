@@ -13,5 +13,4 @@ public interface HSSDKListener {
     void connectState(boolean state);
     void disconnectState(boolean state);
     void inviteMeeting(InvitedMeeting invitedMeeting);
-    void onReserveMeeting(boolean state, Meeting meeting);
 }

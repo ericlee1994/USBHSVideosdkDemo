@@ -15,6 +15,7 @@ import com.shgbit.android.heysharevideo.R;
 import com.shgbit.android.heysharevideo.json.RootOrganization;
 import com.shgbit.android.heysharevideo.json.UserOrganization;
 import com.shgbit.android.heysharevideo.util.Common;
+import com.shgbit.android.heysharevideo.util.GBLog;
 
 import java.util.List;
 
@@ -257,7 +258,7 @@ public class OrganizationStructureAdapter extends BaseAdapter {
 				onlineName += getOnlineNum(ro);
 			}
 		}
-		Log.i("########","Onlinenum:"+onlineName);
+		GBLog.i("########","Onlinenum:"+onlineName);
 		return onlineName;
 	}
 

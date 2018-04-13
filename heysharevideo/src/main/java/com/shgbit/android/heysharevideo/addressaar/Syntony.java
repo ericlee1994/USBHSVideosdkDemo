@@ -22,6 +22,7 @@ import com.shgbit.android.heysharevideo.json.TimeoutInfo;
 import com.shgbit.android.heysharevideo.json.User;
 import com.shgbit.android.heysharevideo.json.UserOrganization;
 import com.shgbit.android.heysharevideo.json.YunDesktop;
+import com.shgbit.android.heysharevideo.util.GBLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -256,7 +257,7 @@ public class Syntony {
     };
 
     public void des () {
-        Log.e(TAG, "############des");
+        GBLog.e(TAG, "############des");
         ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction().remove(mAllAddressListFrag).commit();
     }
 
@@ -454,21 +455,24 @@ public class Syntony {
             mHandler.removeMessages(MESSAGE_2);
             mHandler = null;
         }
+        try {
 
-        ServerInteractManager.getInstance().removeServerInteractCallback(mInteractCallback);
-        FragmentTransaction transaction = ((FragmentActivity)mContext).getSupportFragmentManager().beginTransaction();
-        transaction.remove(mAllAddressListFrag);
-        transaction.remove(mPersonalAddressListFrag);
-        transaction.remove(mPersonalMeetingFrag);
-        transaction.remove(mMeetingAllAddressListFrag);
-        transaction.remove(mGroupFrag);
-        mContext = null;
-        mPersonalMeetingFrag = null;
-        mGroupFrag = null;
-        mAllAddressListFrag = null;
-        mMeetingAllAddressListFrag = null;
-        mPersonalAddressListFrag = null;
-        ServerInteractManager.getInstance().removeServerInteractCallback(mInteractCallback);
+            ServerInteractManager.getInstance().removeServerInteractCallback(mInteractCallback);
+            FragmentTransaction transaction = ((FragmentActivity) mContext).getSupportFragmentManager().beginTransaction();
+            transaction.remove(mAllAddressListFrag);
+            transaction.remove(mPersonalAddressListFrag);
+            transaction.remove(mPersonalMeetingFrag);
+            transaction.remove(mMeetingAllAddressListFrag);
+            transaction.remove(mGroupFrag);
+
+            mPersonalMeetingFrag = null;
+            mGroupFrag = null;
+            mAllAddressListFrag = null;
+            mMeetingAllAddressListFrag = null;
+            mPersonalAddressListFrag = null;
+        }catch (Exception e) {
+            GBLog.e(TAG, e.toString());
+        }
 
     }
 }

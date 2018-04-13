@@ -10,7 +10,7 @@ import com.shgbit.android.heysharevideo.json.XiaoYuConfig;
  */
 
 public interface ServerConfigCallback {
-    void configXiaoyu(XiaoYuConfig config);
+    void configXiaoyu(XiaoYuConfig config, boolean result);
     void configHotfix(HotFixConfig config);
     void configPush(PushConfig config);
 }

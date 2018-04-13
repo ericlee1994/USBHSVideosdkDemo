@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.util.DisplayMetrics;
 
 import com.ainemo.sdk.otf.NemoSDK;
 import com.ainemo.sdk.otf.Settings;
 import com.shgbit.android.heysharevideo.addressaar.AddressCallBack;
 import com.shgbit.android.heysharevideo.addressaar.Syntony;
+import com.shgbit.android.heysharevideo.callback.HSSDKInstantListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
 import com.shgbit.android.heysharevideo.interactmanager.ServerConfigCallback;
@@ -32,6 +34,9 @@ import com.shgbit.android.heysharevideo.json.XiaoYuConfig;
 import com.shgbit.android.heysharevideo.json.YunDesktop;
 import com.shgbit.android.heysharevideo.util.Common;
 import com.shgbit.android.heysharevideo.util.GBLog;
+import com.wa.util.WALog;
+
+import java.io.File;
 
 /**
  * Created by Eric on 2018/2/12.
@@ -44,9 +49,11 @@ public class HSVideoSDK {
     private String settingNum;
     private String serverIP;
     private Context mContext;
+    private static final String SDCARD_DIR = Environment.getExternalStorageDirectory().getPath();
 
     private HSSDKListener sdkListener;
     private HSSDKReserveListener hssdkReserveListener;
+    private HSSDKInstantListener hssdkInstantListener;
     private NemoSDK nemoSDK;
     private Syntony syntony;
 
@@ -69,32 +76,39 @@ public class HSVideoSDK {
     }
 
     public void init(String serverIP, String userName, Context context, HSSDKListener hssdkListener) {
-        GBLog.i(TAG, "HSVideoSDK init.");
+
         this.mContext = context.getApplicationContext();
         this.userName = userName;
         this.serverIP = serverIP;
         this.sdkListener = hssdkListener;
+        writeLog(mContext);
+        GBLog.i(TAG, "HSVideoSDK init.");
         ServerInteractManager.getInstance().setServerInteractCallback(serverInteractCallback);
 //        checkID();
         try {
-            ServerInteractManager.getInstance().init(serverIP, userName);
+            ServerInteractManager.getInstance().init(serverIP, userName, mContext);
             ServerInteractManager.getInstance().getSystemConfig();
             ServerInteractManager.getInstance().setServiceConfigCallback(new ServerConfigCallback() {
                 @Override
-                public void configXiaoyu(XiaoYuConfig xiaoYuConfig) {
-                    String url = xiaoYuConfig.getServiceUrl();
-                    String id = xiaoYuConfig.getEnterpriseId();
-                    if (url != null && id != null) {
-                        if (url.startsWith("https://")) {
-                            url = url.replace("https://", "");
-                        } else if (url.startsWith("http://")) {
-                            url = url.replace("http://", "");
+                public void configXiaoyu(XiaoYuConfig xiaoYuConfig, boolean result) {
+                    if (result) {
+                        String url = xiaoYuConfig.getServiceUrl();
+                        String id = xiaoYuConfig.getEnterpriseId();
+                        if (url != null && id != null) {
+                            if (url.startsWith("https://")) {
+                                url = url.replace("https://", "");
+                            } else if (url.startsWith("http://")) {
+                                url = url.replace("http://", "");
+                            }
+                            Settings settings = new Settings(id);
+                            settings.setPrivateCloudAddress(url);
+                            nemoSDK = NemoSDK.getInstance();
+                            nemoSDK.init(mContext, settings);
+                            sdkListener.initState(true);
                         }
-                        Settings settings = new Settings(id);
-                        settings.setPrivateCloudAddress(url);
-                        nemoSDK = NemoSDK.getInstance();
-                        nemoSDK.init(mContext, settings);
-                        sdkListener.initState(true);
+                    }else {
+                        sdkListener.initState(false);
+                        GBLog.e(TAG, "服务器获取小鱼配置信息失败！");
                     }
                 }
 
@@ -179,8 +193,9 @@ public class HSVideoSDK {
         syntony.setExCallBack(addressCallBack);
     }
 
-    public void startInstantMeeting(String createUser, String[] inviteUsers, String settingNum) {
+    public void startInstantMeeting(String createUser, String[] inviteUsers, String settingNum, HSSDKInstantListener hssdkInstantListener) {
         this.settingNum = settingNum;
+        this.hssdkInstantListener = hssdkInstantListener;
         CreateMeetingInfo createMeetingInfo = new CreateMeetingInfo();
         createMeetingInfo.setCreatedUser(createUser);
         createMeetingInfo.setInvitedUsers(inviteUsers);
@@ -238,6 +253,23 @@ public class HSVideoSDK {
         GBLog.e(TAG, "isMainView:" + isMainView + ", isVideoRecord:" + isVideoRecord + ", isMic:" + isMic  + ", isVideo:" + isVideo);
     }
 
+    private void writeLog(Context context){
+
+        try {
+            String pathName = SDCARD_DIR + "/HSSDK/" + context.getPackageName() + "/log";
+            File dir = new File(pathName);
+            if (!dir.exists()){
+                dir.mkdirs();
+            }
+
+            GBLog.filepath = SDCARD_DIR + "/HSSDK/" + context.getPackageName() + "/log";
+            WALog.filepath = GBLog.filepath;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
     private void checkID() {
         try {
             ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(),
@@ -291,6 +323,8 @@ public class HSVideoSDK {
 
         @Override
         public void onCreateMeeting(boolean result, String error, Meeting meeting) {
+
+            hssdkInstantListener.onCreateMeetng(result, error);
 
             if (result && hasInstantMeeting) {
                 startMeeting(meeting.getMeetingId(), meeting.getPassword(),"", settingNum);

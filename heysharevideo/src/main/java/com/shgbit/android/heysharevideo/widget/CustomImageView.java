@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.shgbit.android.heysharevideo.R;
+import com.shgbit.android.heysharevideo.util.GBLog;
 
 
 /**
@@ -101,7 +102,7 @@ public class CustomImageView extends View {
             mBitmap8 = BitmapFactory.decodeResource(getResources(), R.drawable.time_num_8);
             mBitmap9 = BitmapFactory.decodeResource(getResources(), R.drawable.time_num_9);
         } catch (Throwable e){
-            Log.e(TAG, "init Bitmap Throwable " + e.toString());
+            GBLog.e(TAG, "init Bitmap Throwable " + e.toString());
         }
 
 //        startTime(10);

@@ -1,6 +1,7 @@
 package com.shgbit.android.heysharevideo.interactmanager;
 
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import com.shgbit.android.heysharevideo.json.QueryGroupInfo;
 import com.shgbit.android.heysharevideo.json.RootOrganization;
 import com.shgbit.android.heysharevideo.json.UserInfo;
 import com.shgbit.android.heysharevideo.json.UserOrganization;
+import com.shgbit.android.heysharevideo.util.GBLog;
 import com.wa.util.WAFile;
 import com.wa.util.WAJSONTool;
 
@@ -27,6 +29,7 @@ public class StructureDataCollector {
 	private static StructureDataCollector mCollector;
 
 	private String mUserName = "";
+	private Context context;
 
 	private Organization[] organizations = null;
 	private UserInfo[] userInfos = null;
@@ -73,8 +76,9 @@ public class StructureDataCollector {
 		return mCollector;
 	}
 
-	public void init (String userName) {
+	public void init (String userName, Context context) {
 		mUserName = userName;
+		this.context = context;
 		loadGeneralRoot();
 		ServerInteractManager.getInstance().setServerAddressCallback(mAddressCallback);
 	}
@@ -152,7 +156,7 @@ public class StructureDataCollector {
 		@Override
 		public void eventContactUser(Favorite[] fcu) {
 			if(fcu != null){
-				Log.i(TAG,"##########22"+fcu.length);
+				GBLog.i(TAG,"##########22"+fcu.length);
 				setContactUsers(fcu);
 				mFcu = fcu;
 				if(mContactsListener != null){
@@ -167,18 +171,16 @@ public class StructureDataCollector {
 	}
 
 	public void setGroups(Group[] groups){
-		if(groups == null){
-			return;
-		}
-
 		if (mGpList == null) {
 			mGpList = new ArrayList<Group>();
 		} else {
 			mGpList.clear();
 		}
 
-		for(int i=0;i<groups.length;i++){
-			mGpList.add(groups[i]);
+		if (groups != null) {
+			for(int i=0;i<groups.length;i++){
+				mGpList.add(groups[i]);
+			}
 		}
 
 		if (mListener != null) {
@@ -191,23 +193,21 @@ public class StructureDataCollector {
 	}
 	
 	public void setContactUsers(Favorite[] favs){
-		if (mDataList == null || mDataList.size() <= 0) {
-			return;
-		}
-
 		if (mGeneralList == null) {
 			mGeneralList = new ArrayList<UserOrganization>();
 		} else {
 			mGeneralList.clear();
 		}
 
-		if (favs == null || favs.length == 0) {
-			ChangeContactStatus(mDataList.get(0));
-		} else {
-			for(int i = 0; i < favs.length; i++){
-				UserOrganization uo = getFrequentUserOrganization(favs[i].getUserName(), mDataList.get(0));
-				if (uo != null) {
-					mGeneralList.add(uo);
+		if (mDataList != null && mDataList.size() > 0) {
+			if (favs == null || favs.length == 0) {
+				ChangeContactStatus(mDataList.get(0));
+			} else {
+				for(int i = 0; i < favs.length; i++){
+					UserOrganization uo = getFrequentUserOrganization(favs[i].getUserName(), mDataList.get(0));
+					if (uo != null) {
+						mGeneralList.add(uo);
+					}
 				}
 			}
 		}
@@ -218,20 +218,18 @@ public class StructureDataCollector {
 	}
 	
 	public void setOnlineUsers (OnlineUser[] onlineUsers) {
-		if (onlineUsers == null || onlineUsers.length <= 0) {
-			return;
+		if (onlineUsers == null){
+			onlineUsers = new OnlineUser[0];
 		}
-		if (mDataList == null || mDataList.get(0) == null) {
-			return;
-		}
-		
 		this.onlineUsers = onlineUsers;
 
-		updateUserOranizationState(mDataList.get(0));
-		
-		syncGeneralContacts();
-		
-		syncOrderedContacts();
+		if (mDataList != null && mDataList.size() > 0) {
+			updateUserOranizationState(mDataList.get(0));
+
+			syncGeneralContacts();
+
+			syncOrderedContacts();
+		}
 		
 		if (mListener != null) {
 			mListener.onDataUpdate();
@@ -239,13 +237,6 @@ public class StructureDataCollector {
 	}
 	
 	public void setaddressData(Organization[] organizations, UserInfo[] userInfos) {
-		if (organizations == null || userInfos == null) {
-			return;
-		}
-		if (organizations.length <= 0 || userInfos.length <= 0) {
-			return;
-		}
-		
 		filtUserInfos(userInfos);
 		
 		this.organizations = organizations.clone();
@@ -329,27 +320,10 @@ public class StructureDataCollector {
 			return;
 		}
 		
-		if (onlineUsers == null || onlineUsers.length <= 0) {
-			return;
-		}
-		
 		if (rootOrganization.getUserOrganizations() != null) {
 			for (int i = 0; i < rootOrganization.getUserOrganizations().size(); i++) {
 				rootOrganization.getUserOrganizations().get(i).setStatus("offline");
 				for (OnlineUser ou : onlineUsers) {
-//					if (ou.getUserName().equals(rootOrganization.getUserOrganizations().get(i).getUserName()) == true) {
-//						rootOrganization.getUserOrganizations().get(i).setStatus(ou.getStatus());
-//						if(ou.getMobileStateSessionType() != null){
-//							rootOrganization.getUserOrganizations().get(i).setMobileStateSessionType(ou.getMobileStateSessionType());
-//						}
-//						if(ou.getPCStateSessionType() != null){
-//							rootOrganization.getUserOrganizations().get(i).setPCStateSessionType(ou.getPCStateSessionType());
-//						}
-//						if(ou.getContentOnlyStateSessionType() != null){
-//							rootOrganization.getUserOrganizations().get(i).setContentOnlyStateSessionType(ou.getContentOnlyStateSessionType());
-//						}
-//					}
-
 					if (ou.getUserName().equals(rootOrganization.getUserOrganizations().get(i).getUserName()) == true) {
 						rootOrganization.getUserOrganizations().get(i).setStatus(ou.getStatus());
 					}
@@ -368,43 +342,35 @@ public class StructureDataCollector {
 		String OrganizationOjson = "";
 		String UserOjson = "";
 		try{
-			String dir = Environment.getExternalStorageDirectory().getPath() + "/HeyShare/HeyShare/Contact";
+			String dir = Environment.getExternalStorageDirectory().getPath() + "/HSSDK/" + context.getPackageName() + "/Contact";
 			OrganizationOjson = WAFile.readString(dir+"/Organization.json");
 			UserOjson = WAFile.readString(dir +"/User.json");
 		}catch(Throwable e){
-			Log.e(TAG, "read json Throwable: " + e.toString());
+			GBLog.e(TAG, "read json Throwable: " + e.toString());
 		}
-		
-		if(OrganizationOjson == null || OrganizationOjson.equals("")){
-			return;
-		}
-		
-		if(UserOjson == null || UserOjson.equals("")){
-			return;
-		}
+
 		Organization[] o = null;
 		UserInfo[] u = null;
 		try{
 			o = WAJSONTool.parseArray(OrganizationOjson, Organization.class);
 			u = WAJSONTool.parseArray(UserOjson, UserInfo.class);
 		}catch(Exception e){
-			Log.e(TAG, "parse json Throwable: " + e.toString());
+			GBLog.e(TAG, "parse json Throwable: " + e.toString());
 		}
 
+		if (o == null) {
+			o = new Organization[0];
+		}
+
+		if (u == null) {
+			u = new UserInfo[0];
+		}
 		setaddressData(o,u);
 	}
 
 	private void saveGeneralRoot(Organization[] organizations, UserInfo[] userInfos){
-		
-		if (organizations == null || userInfos == null) {
-			return;
-		}
-		if (organizations.length <= 0 || userInfos.length <= 0) {
-			return;
-		}
-		
 		try{
-			String dir = Environment.getExternalStorageDirectory().getPath() + "/HeyShare/Contact";
+			String dir = Environment.getExternalStorageDirectory().getPath() + "/HSSDK/" + context.getPackageName() + "/Contact";
 
 			String OrganizationString = WAJSONTool.toJSON(organizations);
 			WAFile.write(dir + "/Organization.json", false, OrganizationString);
@@ -412,7 +378,7 @@ public class StructureDataCollector {
 			String UserString = WAJSONTool.toJSON(userInfos);
 			WAFile.write(dir +  "/User.json", false, UserString);
 		}catch(Throwable e){
-			Log.e(TAG, "saveGeneralRoot Throwable: " + e.toString());
+			GBLog.e(TAG, "saveGeneralRoot Throwable: " + e.toString());
 		}
 	}
 	
@@ -432,7 +398,7 @@ public class StructureDataCollector {
 	}
 	
 	private void GetOrganization(Organization[] list, String orgId) {
-		for (Organization org : list) {	
+		for (Organization org : list) {
 			if (org.getOrganizationId().equals(orgId) == true) {
 				mUserOrgList.add(0, org.getOrganizationId());
 				GetOrganization(organizations, org.getParent());
@@ -685,10 +651,19 @@ public class StructureDataCollector {
 		if(username == null){
 			return null;
 		}
+		if (mDataList == null || mDataList.size() <= 0) {
+			return null;
+		}
+		
 		UserOrganization  uo = new UserOrganization();
 		uo = getUserOrganization(username,mDataList.get(0));
+		
+		if (uo == null) {
+			return null;
+		}
 
-		if(uo.getPCStateSessionType().getStatus().equalsIgnoreCase("offline")&&uo.getMobileStateSessionType().getStatus().equalsIgnoreCase("offline")&&
+		try {
+			if(uo.getPCStateSessionType().getStatus().equalsIgnoreCase("offline")&&uo.getMobileStateSessionType().getStatus().equalsIgnoreCase("offline")&&
 				uo.getContentOnlyStateSessionType().getStatus().equalsIgnoreCase("offline")){
 			return "offline";
 		}else {
@@ -698,6 +673,10 @@ public class StructureDataCollector {
 				return "online";
 			}
 		}
+		} catch (Throwable e) {
+			return null;
+		}
+
 	}
 
 	private void sortUsers (String orgId, ArrayList<UserOrganization> list, UserOrganization uo) {

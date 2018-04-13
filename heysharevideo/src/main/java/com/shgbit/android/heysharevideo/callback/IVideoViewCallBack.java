@@ -10,5 +10,4 @@ import com.shgbit.android.heysharevideo.bean.VI;
 public interface IVideoViewCallBack {
     void backToDefaultMode(VI vi0, VI vi);
     void closePic();
-    void receiveLocal();
 }
