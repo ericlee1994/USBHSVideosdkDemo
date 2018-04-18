@@ -13,6 +13,7 @@ import com.shgbit.android.heysharevideo.bean.DISPLAY_MODE;
 import com.shgbit.android.heysharevideo.bean.DisplayType;
 import com.shgbit.android.heysharevideo.bean.MemberInfo;
 import com.shgbit.android.heysharevideo.bean.VI;
+import com.shgbit.android.heysharevideo.bean.VideoCellView;
 import com.shgbit.android.heysharevideo.callback.IVideoViewCallBack;
 import com.shgbit.android.heysharevideo.callback.IViewLayoutCallBack;
 import com.shgbit.android.heysharevideo.contact.MeetingInfoManager;
@@ -38,6 +39,7 @@ public class MyVideoVIew extends ViewGroup{
     private ArrayList<VI> otherList = new ArrayList<VI>();
     private IVideoViewCallBack iVideoViewCallBack;
     private Handler handler = new Handler();
+    private VideoCellView mLocalCellView;
 
     private final int UPDATEVIEW = 0x001;
     private final int HIDELAYOUT = 0x002;
@@ -290,9 +292,11 @@ public class MyVideoVIew extends ViewGroup{
         public void changeId(int id) {
             UIHandler.removeMessages(HIDELAYOUT);
             UIHandler.sendEmptyMessage(HIDELAYOUT);
-                if (mScreenList.get(id).getVideoInfo() != null){
-                        MeetingInfoManager.getInstance().ScreenExchange(mScreenList.get(0).getVideoInfo(), mScreenList.get(id).getVideoInfo());
+            if (mScreenList.get(id).getVideoInfo() != null){
+                iVideoViewCallBack.switchPosition();
+                MeetingInfoManager.getInstance().ScreenExchange(mScreenList.get(0).getVideoInfo(), mScreenList.get(id).getVideoInfo());
             }
+
         }
 
         @Override
@@ -607,6 +611,14 @@ public class MyVideoVIew extends ViewGroup{
         handler.removeCallbacksAndMessages(null);
     }
 
+    public OpenGLTextureView getmLocalVideoCell() {
+        for (int i = 0; i < mScreenList.size(); i++){
+            if (mScreenList.get(i).getVideoInfo() != null && mScreenList.get(i).getVideoInfo().isLocal() ){
+                return mScreenList.get(i).getVideoCellView();
+            }
+        }
+        return null;
+    }
 
     public void updateCamera(boolean isUvc) {
 
@@ -617,14 +629,7 @@ public class MyVideoVIew extends ViewGroup{
             }
         }
     }
-    public OpenGLTextureView getmLocalVideoCell() {
-        for (int i = 0; i < mScreenList.size(); i++){
-            if (mScreenList.get(i).getVideoInfo() != null && mScreenList.get(i).getVideoInfo().isLocal() ){
-                return mScreenList.get(i).getVideoCellView();
-            }
-        }
-        return null;
-    }
+
     public void stopLocalFrameRender() {
         handler.removeCallbacks(drawLocalVideoFrameRunnable);
     }

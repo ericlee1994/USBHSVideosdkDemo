@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.shgbit.android.heysharevideo.activity.HSVideoSDK;
+import com.shgbit.android.heysharevideo.callback.HSSDKInstantListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
 import com.shgbit.android.heysharevideo.json.InvitedMeeting;
@@ -45,12 +46,13 @@ public class MainActivity extends AppCompatActivity {
         editText = findViewById(R.id.meetingid);
         tvContent = findViewById(R.id.tv_content);
 
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null) {
-                        meetingNumber = "910088390080";
+                        meetingNumber = "910010957701";
                     } else {
                         meetingNumber = editText.getText().toString();
                     }
@@ -66,14 +68,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 HSVideoSDK.getInstance().createReservationMeeting(userName, "新会议", "2018-03-23 14:00",
-                        "2018-03-23 21:00", inviteUsers, hssdkReserveListener);
+                        "2018-03-23 21:00", inviteUsers, new HSSDKReserveListener() {
+                            @Override
+                            public void onReserveMeeting(boolean success, String error, Meeting meeting) {
+                                tvContent.setText(meeting.getMeetingId());
+                                editText.setText(meeting.getMeetingId());
+                            }
+                        });
             }
         });
 
         btn_instant.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HSVideoSDK.getInstance().startInstantMeeting(userName, inviteUsers, "0001");
+                HSVideoSDK.getInstance().startInstantMeeting(userName, inviteUsers, "0001", new HSSDKInstantListener() {
+                    @Override
+                    public void onCreateMeetng(boolean result, String error) {
+
+                    }
+                });
             }
         });
 
@@ -84,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void initState(boolean b) {
                         HSVideoSDK.getInstance().connect("lizheng", "123456");
+                        Log.e(TAG, "initState:" + b);
                     }
 
                     @Override
@@ -100,12 +114,6 @@ public class MainActivity extends AppCompatActivity {
                     public void inviteMeeting(InvitedMeeting invitedMeeting) {
 
                     }
-
-                    @Override
-                    public void onReserveMeeting(boolean state, Meeting meeting) {
-                        tvContent.setText(meeting.getMeetingId());
-                        editText.setText(meeting.getMeetingId());
-                    }
                 });
     }
     @Override
@@ -113,14 +121,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         HSVideoSDK.getInstance().finalizeSDK();
     }
-
-    private HSSDKReserveListener hssdkReserveListener = new HSSDKReserveListener() {
-        @Override
-        public void onReserveMeeting(boolean success, String error, Meeting meeting) {
-            tvContent.setText(meeting.getMeetingId());
-            editText.setText(meeting.getMeetingId());
-        }
-    };
 
     private void checkPermission() {
         if (!(ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) &&

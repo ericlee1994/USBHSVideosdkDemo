@@ -1,1 +1,1 @@
-include ':app', ':heysharevideo'
+include ':app', ':heysharevideo', ':mylibrary'

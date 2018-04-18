@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.log.L;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 
@@ -102,6 +103,7 @@ public class HSVideoSDK {
                             }
                             Settings settings = new Settings(id);
                             settings.setPrivateCloudAddress(url);
+                            GBLog.e(TAG, id + ", " + url);
                             nemoSDK = NemoSDK.getInstance();
                             nemoSDK.init(mContext, settings);
                             sdkListener.initState(true);

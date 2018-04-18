@@ -156,7 +156,7 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
     private void init(Context context) {
         LayoutInflater mInflater = LayoutInflater.from(context);
         View v = mInflater.inflate(R.layout.view_popup_old, null);
-        addView(v, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+//        addView(v, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mTopLayout = (LinearLayout) v.findViewById(R.id.person_lay);
         mJoinTextView = (TextView) v.findViewById(R.id.popup_joined);
         mRefuseTextView = (TextView) v.findViewById(R.id.popup_refuse);
