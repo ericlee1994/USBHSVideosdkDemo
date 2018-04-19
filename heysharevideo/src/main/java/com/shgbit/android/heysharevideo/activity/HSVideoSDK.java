@@ -151,7 +151,7 @@ public class HSVideoSDK {
 
         parseSettingNum(settingNum);
 
-        if (meetingName == null){
+        if (meetingName == null || meetingName.equals("")){
             meetingName = "默认会议";
         }
 

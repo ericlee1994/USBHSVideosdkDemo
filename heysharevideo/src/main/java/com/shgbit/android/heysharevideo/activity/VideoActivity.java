@@ -332,7 +332,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 //            videoView.updateCamera(true);
             nemoSDK.updateCamera(true);
             releaseCamera();
-            videoView.getmLocalVideoCell().releaseRender();
+//            videoView.getmLocalVideoCell().releaseRender();
 
             queueEvent(new Runnable() {
                 @Override
@@ -478,7 +478,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                     currentCamera = 2;
                     videoView.updateCamera(true);
                     NemoSDK.getInstance().updateCamera(true);
-                    videoView.getmLocalVideoCell().releaseGxt();
+//                    videoView.getmLocalVideoCell().releaseGxt();
                     onDialogResult(true);
                     break;
                 case 2:
