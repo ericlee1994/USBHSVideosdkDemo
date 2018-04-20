@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.log.L;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 
@@ -102,6 +103,7 @@ public class HSVideoSDK {
                             }
                             Settings settings = new Settings(id);
                             settings.setPrivateCloudAddress(url);
+                            GBLog.e(TAG, id + ", " + url);
                             nemoSDK = NemoSDK.getInstance();
                             nemoSDK.init(mContext, settings);
                             sdkListener.initState(true);
@@ -149,7 +151,7 @@ public class HSVideoSDK {
 
         parseSettingNum(settingNum);
 
-        if (meetingName == null){
+        if (meetingName == null || meetingName.equals("")){
             meetingName = "默认会议";
         }
 
@@ -327,7 +329,7 @@ public class HSVideoSDK {
             hssdkInstantListener.onCreateMeetng(result, error);
 
             if (result && hasInstantMeeting) {
-                startMeeting(meeting.getMeetingId(), meeting.getPassword(),"", settingNum);
+                startMeeting(meeting.getMeetingId(), meeting.getPassword(),"即时会议", settingNum);
             }else {
                 GBLog.e(TAG, "onCreateMeeting: false," + error );
             }

@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
 
 android {
     compileSdkVersion 26
@@ -41,7 +42,11 @@ dependencies {
     compileOnly 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
     //    implementation files('libs/joda-time-2.9.9.jar')
     implementation 'joda-time:joda-time:2.9.9'
+    //    implementation files('libs/xylink-android-sdk-2.20.1.jar')
+    implementation(name: 'libuvccamera-release', ext: 'aar')
+    //    implementation("com.serenegiant:common:1.5.20"){}
+    //    implementation files('libs/serenegiant.jar')
+    compileOnly files('libs/camera.jar')
     implementation files('libs/xylink-android-sdk-2.20.1.jar')
-    compile(name:'libuvccamera-release', ext:'aar')
-    compile("com.serenegiant:common:1.5.20"){}
 }
+

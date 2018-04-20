@@ -1686,6 +1686,7 @@ public class ServerInteractManager {
 								if (callback == null) {
 									continue;
 								}
+								mInvitedMeeting.setType(md.getMeeting().getType());
 								callback.eventInvitedMeeting(mInvitedMeeting);
 							}
 						}

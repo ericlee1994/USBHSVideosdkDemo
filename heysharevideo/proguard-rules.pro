@@ -66,6 +66,7 @@
 -dontwarn android.http.b
 -dontwarn com.ainemo.sdk.otf.**
 -dontwarn vulture.module.call.**
+-dontwarn com.serenegiant.**
 
 #使用GSON、fastjson等框架时，所写的JSON对象类不混淆，否则无法将JSON解析成对应的对象
 -keepclassmembers class * {
