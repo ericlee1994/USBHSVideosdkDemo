@@ -8,6 +8,7 @@ public class Meeting {
 	private User[] users;
 	private Record record;
 	private String status;
+	private String type;
 	private String password;
 	private YunDesktop yunDesktop;
 	private String startTime;//"2016-10-20 15:00"
@@ -94,5 +95,13 @@ public class Meeting {
 
 	public void setRecord(Record record) {
 		this.record = record;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 }

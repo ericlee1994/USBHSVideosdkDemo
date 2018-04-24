@@ -14,6 +14,7 @@ import com.shgbit.android.heysharevideo.addressaar.AddressCallBack;
 import com.shgbit.android.heysharevideo.addressaar.Syntony;
 import com.shgbit.android.heysharevideo.callback.HSSDKInstantListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKListener;
+import com.shgbit.android.heysharevideo.callback.HSSDKMeetingListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
 import com.shgbit.android.heysharevideo.interactmanager.ServerConfigCallback;
 import com.shgbit.android.heysharevideo.interactmanager.ServerInteractCallback;
@@ -38,6 +39,7 @@ import com.shgbit.android.heysharevideo.util.GBLog;
 import com.wa.util.WALog;
 
 import java.io.File;
+import java.lang.annotation.Target;
 
 /**
  * Created by Eric on 2018/2/12.
@@ -48,18 +50,19 @@ public class HSVideoSDK {
     private static final String TAG = "HSVideoSDK";
     private String userName;
     private String settingNum;
-    private String serverIP;
     private Context mContext;
     private static final String SDCARD_DIR = Environment.getExternalStorageDirectory().getPath();
 
     private HSSDKListener sdkListener;
     private HSSDKReserveListener hssdkReserveListener;
     private HSSDKInstantListener hssdkInstantListener;
+    private HSSDKMeetingListener hssdkMeetingListener;
     private NemoSDK nemoSDK;
     private Syntony syntony;
 
     static boolean hasStartMeeting = false;
     private boolean hasInstantMeeting = false;
+    private boolean hasLogin = false;
     private boolean isMainView = false;
     private boolean isVideoRecord = false;
     private boolean isMic = false;
@@ -76,62 +79,69 @@ public class HSVideoSDK {
         private static final HSVideoSDK mInstance = new HSVideoSDK();
     }
 
-    public void init(String serverIP, String userName, Context context, HSSDKListener hssdkListener) {
-
-        this.mContext = context.getApplicationContext();
-        this.userName = userName;
-        this.serverIP = serverIP;
-        this.sdkListener = hssdkListener;
-        writeLog(mContext);
-        GBLog.i(TAG, "HSVideoSDK init.");
-        ServerInteractManager.getInstance().setServerInteractCallback(serverInteractCallback);
+    public void init(String serverIP, String userName, Context context) {
+        if (sdkListener != null) {
+            this.mContext = context.getApplicationContext();
+            this.userName = userName;
+            writeLog(mContext);
+            GBLog.i(TAG, "HSVideoSDK init.");
+            ServerInteractManager.getInstance().setServerInteractCallback(serverInteractCallback);
 //        checkID();
-        try {
-            ServerInteractManager.getInstance().init(serverIP, userName, mContext);
-            ServerInteractManager.getInstance().getSystemConfig();
-            ServerInteractManager.getInstance().setServiceConfigCallback(new ServerConfigCallback() {
-                @Override
-                public void configXiaoyu(XiaoYuConfig xiaoYuConfig, boolean result) {
-                    if (result) {
-                        String url = xiaoYuConfig.getServiceUrl();
-                        String id = xiaoYuConfig.getEnterpriseId();
-                        if (url != null && id != null) {
-                            if (url.startsWith("https://")) {
-                                url = url.replace("https://", "");
-                            } else if (url.startsWith("http://")) {
-                                url = url.replace("http://", "");
+            try {
+                ServerInteractManager.getInstance().init(serverIP, userName, mContext);
+                ServerInteractManager.getInstance().getSystemConfig();
+                ServerInteractManager.getInstance().setServiceConfigCallback(new ServerConfigCallback() {
+                    @Override
+                    public void configXiaoyu(XiaoYuConfig xiaoYuConfig, boolean result) {
+                        if (result) {
+                            String url = xiaoYuConfig.getServiceUrl();
+                            String id = xiaoYuConfig.getEnterpriseId();
+                            if (url != null && id != null) {
+                                if (url.startsWith("https://")) {
+                                    url = url.replace("https://", "");
+                                } else if (url.startsWith("http://")) {
+                                    url = url.replace("http://", "");
+                                }
+                                Settings settings = new Settings(id);
+                                settings.setPrivateCloudAddress(url);
+                                nemoSDK = NemoSDK.getInstance();
+                                nemoSDK.init(mContext, settings);
+                                sdkListener.initState(true);
                             }
-                            Settings settings = new Settings(id);
-                            settings.setPrivateCloudAddress(url);
-                            GBLog.e(TAG, id + ", " + url);
-                            nemoSDK = NemoSDK.getInstance();
-                            nemoSDK.init(mContext, settings);
-                            sdkListener.initState(true);
+                        } else {
+                            sdkListener.initState(false);
+                            GBLog.e(TAG, "服务器获取小鱼配置信息失败！");
                         }
-                    }else {
-                        sdkListener.initState(false);
-                        GBLog.e(TAG, "服务器获取小鱼配置信息失败！");
                     }
-                }
 
-                @Override
-                public void configHotfix(HotFixConfig hotFixConfig) {
+                    @Override
+                    public void configHotfix(HotFixConfig hotFixConfig) {
 
-                }
+                    }
 
-                @Override
-                public void configPush(PushConfig pushConfig) {
+                    @Override
+                    public void configPush(PushConfig pushConfig) {
 
-                }
-            });
-        }catch (Exception e) {
-            sdkListener.initState(false);
-            GBLog.e(TAG, "init:" + e.toString());
+                    }
+                });
+            } catch (Exception e) {
+                sdkListener.initState(false);
+                GBLog.e(TAG, "init:" + e.toString());
+            }
+            DisplayMetrics dm = context.getResources().getDisplayMetrics();
+            Common.SCREENHEIGHT = dm.widthPixels;
+            Common.SCREENWIDTH = dm.heightPixels;
+        }else {
+            GBLog.e(TAG, "init: HSSDKListener didn't init");
         }
-        DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        Common.SCREENHEIGHT = dm.widthPixels;
-        Common.SCREENWIDTH = dm.heightPixels;
+    }
 
+    public void setSDKListener(HSSDKListener hssdkListener){
+        this.sdkListener = hssdkListener;
+    }
+
+    public void setMeetingListener(HSSDKMeetingListener hssdkMeetingListener){
+        this.hssdkMeetingListener = hssdkMeetingListener;
     }
 
     public void connect(String userName, String userPwd) {
@@ -147,27 +157,31 @@ public class HSVideoSDK {
     }
 
     public void startMeeting(String meetingNumber, String meetingPwd, String meetingName, String settingNum) {
-        this.settingNum = settingNum;
+        if (hasLogin) {
+            this.settingNum = settingNum;
 
-        parseSettingNum(settingNum);
+            parseSettingNum(settingNum);
 
-        if (meetingName == null || meetingName.equals("")){
-            meetingName = "默认会议";
+            if (meetingName == null || meetingName.equals("")) {
+                meetingName = "默认会议";
+            }
+
+            Intent intent = new Intent(mContext, VideoActivity.class);
+            intent.putExtra("username", userName);
+            intent.putExtra("password", meetingPwd);
+            intent.putExtra("meetingName", meetingName);
+            intent.putExtra("number", meetingNumber);
+            intent.putExtra("mainView", isMainView);
+            intent.putExtra("videoRecord", isVideoRecord);
+            intent.putExtra("isMic", !isMic);
+            intent.putExtra("isVideo", !isVideo);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            mContext.startActivity(intent);
+
+            hasStartMeeting = true;
+        }else {
+            GBLog.e(TAG, "start failed : haven't logined");
         }
-
-        Intent intent = new Intent(mContext, VideoActivity.class);
-        intent.putExtra("username", userName);
-        intent.putExtra("password", meetingPwd);
-        intent.putExtra("meetingName", meetingName);
-        intent.putExtra("number", meetingNumber);
-        intent.putExtra("mainView", isMainView);
-        intent.putExtra("videoRecord", isVideoRecord);
-        intent.putExtra("isMic", !isMic);
-        intent.putExtra("isVideo", !isVideo);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mContext.startActivity(intent);
-
-        hasStartMeeting = true;
     }
 
     public void finalizeSDK() {
@@ -184,13 +198,13 @@ public class HSVideoSDK {
 
     public void openAddress(Context context, int layoutId, int layoutId2, String userName, AddressCallBack addressCallBack) {
 
-		 if(syntony != null){
+        if(syntony != null){
             syntony.destroy();
         }
 		
 	    syntony = new Syntony();
         Syntony syntony = new Syntony();
-        syntony.init(context, layoutId, layoutId2,userName);
+        syntony.init(context, layoutId, layoutId2, userName);
         syntony.startAddressList(false, "vertical", false, null, null);
         syntony.setExCallBack(addressCallBack);
     }
@@ -277,7 +291,7 @@ public class HSVideoSDK {
             ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(),
                     PackageManager.GET_META_DATA);
             String id = appInfo.metaData.getString("HS_APP_ID");
-            if (id == null) {
+            if (id == null && sdkListener != null) {
                 sdkListener.initState(false);
                 GBLog.e(TAG, "APP_ID:null");
             }
@@ -295,12 +309,23 @@ public class HSVideoSDK {
     private ServerInteractCallback serverInteractCallback = new ServerInteractCallback() {
         @Override
         public void onLogin(boolean result, String error, User user) {
-            sdkListener.connectState(result);
+            if (sdkListener != null) {
+                sdkListener.connectState(result);
+                hasLogin = true;
+            }else {
+                hasLogin = false;
+                GBLog.e(TAG, "onLogin: sdkListener = null" );
+            }
         }
 
         @Override
         public void onLogout(boolean result, String error) {
-            sdkListener.disconnectState(result);
+            if (sdkListener != null) {
+                sdkListener.disconnectState(result, error);
+                hasLogin = false;
+            }else {
+                GBLog.e(TAG, "onLogout: sdkListener = null");
+            }
         }
 
         @Override
@@ -329,7 +354,7 @@ public class HSVideoSDK {
             hssdkInstantListener.onCreateMeetng(result, error);
 
             if (result && hasInstantMeeting) {
-                startMeeting(meeting.getMeetingId(), meeting.getPassword(),"", settingNum);
+                startMeeting(meeting.getMeetingId(), meeting.getPassword(),"即时会议", settingNum);
             }else {
                 GBLog.e(TAG, "onCreateMeeting: false," + error );
             }
@@ -364,7 +389,6 @@ public class HSVideoSDK {
 
         @Override
         public void onReserveMeeting(boolean success, String error, Meeting meeting) {
-//            sdkListener.onReserveMeeting(success, meeting);
             hssdkReserveListener.onReserveMeeting(success, error, meeting);
         }
 
@@ -395,8 +419,12 @@ public class HSVideoSDK {
 
         @Override
         public void eventInvitedMeeting(InvitedMeeting meeting) {
-            if (!hasStartMeeting) {
-                sdkListener.inviteMeeting(meeting);
+            if (!hasStartMeeting && hssdkMeetingListener !=null) {
+                hssdkMeetingListener.inviteMeeting(meeting);
+            }else {
+                if (hssdkMeetingListener == null) {
+                    GBLog.e(TAG, "eventInvitedMeeting: hssdkMeetingListener = null");
+                }
             }
         }
 
@@ -436,8 +464,12 @@ public class HSVideoSDK {
                 GBLog.e(TAG, "onValidate success");
 
             }else {
-                sdkListener.initState(false);
-                GBLog.e(TAG, "onValidate:" + err);
+                if (sdkListener != null) {
+                    sdkListener.initState(false);
+                    GBLog.e(TAG, "onValidate:" + err);
+                }else {
+                    GBLog.e(TAG, "onValidate: sdkListener = null");
+                }
             }
         }
     };

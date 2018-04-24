@@ -6,6 +6,8 @@ public class InvitedMeeting {
 	private String meetingName;
 	private String inviter;
 	private String inviterDisplayName;
+	private String type;
+
 	public String getMeetingId() {
 		return meetingId;
 	}
@@ -36,5 +38,12 @@ public class InvitedMeeting {
 	public void setInviterDisplayName(String inviterDisplayName) {
 		this.inviterDisplayName = inviterDisplayName;
 	}
-	
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
 }

@@ -11,6 +11,9 @@ import com.shgbit.android.heysharevideo.json.Meeting;
 public interface HSSDKListener {
     void initState(boolean state);
     void connectState(boolean state);
-    void disconnectState(boolean state);
-    void inviteMeeting(InvitedMeeting invitedMeeting);
+    void disconnectState(boolean state, String info);
+
+
+
+
 }

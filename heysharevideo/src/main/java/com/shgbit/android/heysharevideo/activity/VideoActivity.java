@@ -376,6 +376,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
 //            MeetingInfoManager.getInstance().LocalChange(false);
 
+            nemoSDK.setVideoMute(muteCamera);
+
             releaseCamera();
 
             isUvcCamera = false;
@@ -561,6 +563,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                 GBLog.e(TAG, "onMemberChanged isUvc[" + i + "]" + mScreen.get(i).isUvc());
                 GBLog.e(TAG, "onMemberChanged getDataSourceID["+ i +"]" + mScreen.get(i).getDataSourceID());
                 GBLog.e(TAG, "onMemberChanged getDisplayName["+ i +"]" + mScreen.get(i).getDisplayName());
+                GBLog.e(TAG, "onMemberChanged getDisplayName["+ i +"]" + mScreen.get(i).getNet_status());
             }
             if (mScreen != null && mScreen.size() > 0) {
                 if (!mScreen.get(0).getDataSourceID().equalsIgnoreCase(NemoSDK.getLocalVideoStreamID())) {
@@ -1255,6 +1258,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                         activity.muteCamera = !activity.muteCamera;
                         activity.videoView.closeLocalView(activity.muteCamera);
                         activity.nemoSDK.setVideoMute(activity.muteCamera);
+
+
 //                        MQTTClient.getInstance().publishMsg(TOPIC.CTRL_DEVICE + mRecallMeeting.getId(), activity.getLocalCtrlStatus());
                         break;
                     case MSG_BTN_SWITCH_CAMERA:
@@ -1277,6 +1282,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                         GBLog.e(TAG, "MSG_BTN_VOICE_MODE");
                         activity.audioMode = !activity.audioMode;
                         activity.nemoSDK.switchCallMode(activity.audioMode);
+
                         MeetingInfoManager.getInstance().ModeVoice(activity.audioMode);
                         if (!activity.audioMode) {
                             activity.videoView.closeLocalView(activity.muteCamera);
@@ -1487,6 +1493,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             popupView = new PopupOldView(this, muteMic, muteCamera, audioMode);
             videoView = new MyVideoVIew(this, displayMode);
 
+
             dismissPopup();
             mWholeLayout.addView(mTopLayout);
             mWholeLayout.addView(videoView);
@@ -1550,6 +1557,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
         }
         lastMode = displayMode;
+        videoView.requestLocalFrame();
 //        if (mainView != null) {
 //            videoView.setPizhu(mainView);
 //        }
