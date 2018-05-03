@@ -245,7 +245,7 @@ public class AllAddressListFragment extends Fragment {
 			mHorizontalLayout.setVisibility(View.GONE);
 			mCreateGroup.setVisibility(View.GONE);
 			
-			if(screen_status.equals("vertical") && mAddressUserOrganization != null){
+			if(screen_status.equals("vertical") && mAddressUserOrganization != null && mAddressUserOrganization.size() != 0){
 				mSideBar.setVisibility(View.VISIBLE);
 			}else {
 				mSideBar.setVisibility(View.GONE);

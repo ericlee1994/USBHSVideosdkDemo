@@ -135,8 +135,8 @@ public class StatusView extends LinearLayout {
                 CancelInviteInfo cl = new CancelInviteInfo();
                 cl.setMeetingId(VideoActivity.mRecallMeeting.getId());
                 cl.setInvitedUser(vi.getRemoteName());
-//                VideoActivity.vcApplication.getInteractManager().cancleMeeting(cl);
-                ServerInteractManager.getInstance().cancleMeeting(cl);
+//                VideoActivity.vcApplication.getInteractManager().cancelMeeting(cl);
+                ServerInteractManager.getInstance().cancelMeeting(cl);
 
             }
         });

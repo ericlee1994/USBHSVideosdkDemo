@@ -59,6 +59,7 @@ public class MeetingInfoManager {
 
 	private List<MemberInfo> mNemoData;
 	private List<MemberInfo> mServerData;
+	private User[] mServerUsers;
 
 	private List<Command> mCommand;
 
@@ -303,10 +304,10 @@ public class MeetingInfoManager {
 			while (mMeetingInfoThreadLoop) {
 
 				try {
-
-					if (OperateCommand()) {
-						CallBack();
-					}
+//
+//					if (OperateCommand()) {
+//						CallBack();
+//					}
 
 					mNemoUpdate = false;
 
@@ -318,6 +319,10 @@ public class MeetingInfoManager {
 					CheckUnJoinedList(mMember);
 
 					if (CheckinList(mMember)) {
+						CallBack();
+					}
+
+					if (OperateCommand()) {
 						CallBack();
 					}
 
@@ -371,17 +376,18 @@ public class MeetingInfoManager {
 				return false;
 			}
 
-			User[] users = cmi.getMeeting().getUsers();
+//			User[] users = cmi.getMeeting().getUsers();
+			mServerUsers = cmi.getMeeting().getUsers();
 			duration = cmi.getMeeting().getDuration();
 			mMeetingName = cmi.getMeeting().getMeetingName();
-			memberSize = users.length;
+			memberSize = mServerUsers.length;
 			mServerData.clear();
 			mJoinSize = 0;
 			GBLog.i(TAG, "---GetCurrentMeeting---,memberSize=" + memberSize + ",meetingName="+ mMeetingName);
 
-			for (int i = 0; i < users.length; i++) {
+			for (int i = 0; i < mServerUsers.length; i++) {
 				boolean isJoin = false;
-				User item = users[i];
+				User item = mServerUsers[i];
 				if (item.getStatus() == null){
 					if (isMemberInList(mUnjoinedMember,item.getUserName()) == -1){
 						MemberInfo noStatus = new MemberInfo();
@@ -532,24 +538,26 @@ public class MeetingInfoManager {
 						}
 //						m.setId(videoInfo.getRemoteName() + "_content");
 						m.setId(remoteName);
-						String name = StructureDataCollector.getInstance().transformName(m.getRemoteName());
-						if (name != null && !name.isEmpty()) {
-//							m.setDisplayName(name + "的共享桌面");
-							m.setDisplayName(name);
-						} else {
-							m.setDisplayName(m.getRemoteName()/* + "的共享桌面"*/);
-						}
+						m.setDisplayName(getDisplayName(remoteName));
+//						String name = StructureDataCollector.getInstance().transformName(m.getRemoteName());
+//						if (name != null && !name.isEmpty()) {
+////							m.setDisplayName(name + "的共享桌面");
+//							m.setDisplayName(name);
+//						} else {
+//							m.setDisplayName(m.getRemoteName()/* + "的共享桌面"*/);
+//						}
 					} else {
 						if (m.getSessionType() == SESSIONTYPE.CONTENTONLY){
 							m.setNet_status(MemberInfo.NET_STATUS.ContentOnlyUnsend);
 //							m.setId(videoInfo.getRemoteName() + "_content");
 							m.setId(remoteName);
-							String name = StructureDataCollector.getInstance().transformName(m.getRemoteName());
-							if (name != null && !name.isEmpty()) {
-								m.setDisplayName(name/* + "的共享桌面"*/);
-							} else {
-								m.setDisplayName(m.getRemoteName()/* + "的共享桌面"*/);
-							}
+							m.setDisplayName(getDisplayName(remoteName));
+//							String name = StructureDataCollector.getInstance().transformName(m.getRemoteName());
+//							if (name != null && !name.isEmpty()) {
+//								m.setDisplayName(name/* + "的共享桌面"*/);
+//							} else {
+//								m.setDisplayName(m.getRemoteName()/* + "的共享桌面"*/);
+//							}
 						} else {
 							m.setId(remoteName);
 						}
@@ -614,9 +622,7 @@ public class MeetingInfoManager {
 			result.addAll(server);
 			GBLog.i(TAG, "---MergeServerNemo---,result.size()=" + result.size());
 			for (int i = 0; i < nemo.size(); i++) {
-
 				MemberInfo n = nemo.get(i);
-
 				if (n.getNet_status() != MemberInfo.NET_STATUS.VideoMute
 						&& n.getNet_status() != MemberInfo.NET_STATUS.ContentOnlyUnsend
 						&& n.getNet_status() != MemberInfo.NET_STATUS.VoiceMode){
@@ -630,8 +636,9 @@ public class MeetingInfoManager {
 				int index = isMemberInList(result, n);
 				if (index == -1) {
 					if (n.getDisplayName() == null || n.getDisplayName().isEmpty()) {
-						String name = StructureDataCollector.getInstance().transformName(n.getRemoteName());
-						n.setDisplayName(name);
+						n.setDisplayName(getDisplayName(n.getRemoteName()));
+//						String name = StructureDataCollector.getInstance().transformName(n.getRemoteName());
+//						n.setDisplayName(name);
 					}
 					n.setStatus(changeToStatus("joined"));
 					result.add(n);
@@ -1020,8 +1027,8 @@ public class MeetingInfoManager {
 							m.setId((String) args[0]);
 							m.setUserName((String) args[0]);
 							m.setRemoteName((String) args[0]);
-							String name = StructureDataCollector.getInstance().transformName(m.getRemoteName());
-							m.setDisplayName(name);
+//							String name = StructureDataCollector.getInstance().transformName(m.getRemoteName());
+							m.setDisplayName(getDisplayName((String) args[0]));
 							m.setStatus((STATUS) args[1]);
 							m.setNet_status(MemberInfo.NET_STATUS.NULL);
 
@@ -1525,6 +1532,17 @@ public class MeetingInfoManager {
 			}
 		}
 		return -1;
+	}
+
+	private String getDisplayName(String username) {
+		String displayName = "";
+		for(User user : mServerUsers){
+			if(user.getUserName().equalsIgnoreCase(username)){
+				displayName = user.getDisplayName();
+				break;
+			}
+		}
+		return displayName;
 	}
 
 	private boolean UpdateInfo(MemberInfo info, MemberInfo newInfo) {

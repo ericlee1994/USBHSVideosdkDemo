@@ -81,6 +81,7 @@
 -keep class com.shgbit.android.heysharevideo.callback.HSSDKListener{*;}
 -keep class com.shgbit.android.heysharevideo.callback.HSSDKInstantListener{*;}
 -keep class com.shgbit.android.heysharevideo.callback.HSSDKReserveListener{*;}
+-keep class com.shgbit.android.heysharevideo.callback.HSSDKMeetingListener{*;}
 -keep class com.shgbit.android.heysharevideo.interactmanager.ServerInteractManager{*;}
 
 #---------------------------------默认保留区---------------------------------

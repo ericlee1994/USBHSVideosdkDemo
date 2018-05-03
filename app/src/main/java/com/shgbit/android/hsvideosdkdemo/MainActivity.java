@@ -18,6 +18,7 @@ import com.shgbit.android.heysharevideo.callback.HSSDKListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
 import com.shgbit.android.heysharevideo.json.InvitedMeeting;
 import com.shgbit.android.heysharevideo.json.Meeting;
+import com.shgbit.android.heysharevideo.json.User;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null) {
-                        meetingNumber = "910052852875";
+                        meetingNumber = "910063229078";
                     } else {
                         meetingNumber = editText.getText().toString();
                     }
@@ -92,29 +93,24 @@ public class MainActivity extends AppCompatActivity {
 
         // http://121.43.162.79:4005"
         // http://www.shgbitcloud.com:4000
-        HSVideoSDK.getInstance().init("http://www.shgbitcloud.com:4005", "lizheng", this,
-                new HSSDKListener() {
-                    @Override
-                    public void initState(boolean b) {
-                        HSVideoSDK.getInstance().connect("lizheng", "123456");
-                        Log.e(TAG, "initState:" + b);
-                    }
+        HSVideoSDK.getInstance().setSDKListener(new HSSDKListener() {
+            @Override
+            public void initState(boolean state) {
+                isInit = state;
+                HSVideoSDK.getInstance().connect("lizheng", "123456");
+            }
 
-                    @Override
-                    public void connectState(boolean b) {
-                        isInit = b;
-                    }
+            @Override
+            public void connectState(boolean state, User user) {
 
-                    @Override
-                    public void disconnectState(boolean b) {
-                        Log.e(TAG, "disconnectState:" + b);
-                    }
+            }
 
-                    @Override
-                    public void inviteMeeting(InvitedMeeting invitedMeeting) {
+            @Override
+            public void disconnectState(boolean state, String info) {
 
-                    }
-                });
+            }
+        });
+        HSVideoSDK.getInstance().init("http://www.shgbitcloud.com:4005", this);
     }
     @Override
     protected void onDestroy() {

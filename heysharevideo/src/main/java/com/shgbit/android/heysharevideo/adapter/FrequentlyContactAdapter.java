@@ -85,52 +85,53 @@ public class FrequentlyContactAdapter extends BaseAdapter {
         if(isMeeting == false){
         	mCircular.setVisibility(View.INVISIBLE);
         }
-        
-        mNum.setText(mDataList.get(position).getDisplayName());
-        
-        String status=mDataList.get(position).getStatus();
-        
-        mDeparment.setText(getDepartment(mDataList.get(position).getDepartment(), 1));
-    	if(status.equalsIgnoreCase("busy") || (status.equalsIgnoreCase("online"))){
-			if (status.equalsIgnoreCase("busy")) {
-				mStatus.setText(mcontext.getString(R.string.person_busy));
-				mStatus.setTextColor(mcontext.getResources().getColor(R.color.busy_color));
+		if(position<mDataList.size()) {
+			mNum.setText(mDataList.get(position).getDisplayName());
+
+			String status = mDataList.get(position).getStatus();
+
+			mDeparment.setText(getDepartment(mDataList.get(position).getDepartment(), 1));
+			if (status.equalsIgnoreCase("busy") || (status.equalsIgnoreCase("online"))) {
+				if (status.equalsIgnoreCase("busy")) {
+					mStatus.setText(mcontext.getString(R.string.person_busy));
+					mStatus.setTextColor(mcontext.getResources().getColor(R.color.busy_color));
+				} else {
+					mStatus.setText(mcontext.getString(R.string.person_online));
+					mStatus.setTextColor(mcontext.getResources().getColor(R.color.online_color));
+				}
+
+				if (mDataList.get(position).isSelect() == true) {
+					mSelect.setImageResource(R.drawable.icon_status_select);
+					mPng.setImageResource(R.drawable.child_user_selecdt);
+					mNum.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+					mDeparment.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+					mStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+				} else {
+					mSelect.setImageResource(R.drawable.icon_status_normal);
+					mPng.setImageResource(R.drawable.child_user_normal);
+					mNum.setTextColor(mcontext.getResources().getColor(R.color.online_color));
+					mDeparment.setTextColor(mcontext.getResources().getColor(R.color.online_color));
+				}
 			} else {
-				mStatus.setText(mcontext.getString(R.string.person_online));
-				mStatus.setTextColor(mcontext.getResources().getColor(R.color.online_color));
+				mSelect.setImageResource(R.drawable.icon_state_offline);
+				mStatus.setText(mcontext.getString(R.string.person_gone));
+				mNum.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
+				mPng.setImageResource(R.drawable.child_user_offline);
+				mDeparment.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
+				mStatus.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
+				if (mDataList.get(position).isSelect() == true) {
+					mSelect.setImageResource(R.drawable.icon_status_select);
+					mPng.setImageResource(R.drawable.child_user_selecdt);
+					mNum.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+					mDeparment.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+					mStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
+				}
 			}
-			
-			if(mDataList.get(position).isSelect()==true){
-				    mSelect.setImageResource(R.drawable.icon_status_select);
-				    mPng.setImageResource(R.drawable.child_user_selecdt);
-				    mNum.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-				    mDeparment.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-				    mStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-			}else{
-				    mSelect.setImageResource(R.drawable.icon_status_normal);
-				    mPng.setImageResource(R.drawable.child_user_normal);
-				    mNum.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-				    mDeparment.setTextColor(mcontext.getResources().getColor(R.color.online_color));
-			}
-		}else{
-			mSelect.setImageResource(R.drawable.icon_state_offline);
-			mStatus.setText(mcontext.getString(R.string.person_gone));
-			mNum.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
-			mPng.setImageResource(R.drawable.child_user_offline);
-			mDeparment.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
-			mStatus.setTextColor(mcontext.getResources().getColor(R.color.offline_color));
-			if(mDataList.get(position).isSelect()==true){
-				    mSelect.setImageResource(R.drawable.icon_status_select);
-				    mPng.setImageResource(R.drawable.child_user_selecdt);
-				    mNum.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-				    mDeparment.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-				    mStatus.setTextColor(mcontext.getResources().getColor(R.color.select_color));
-			}
+			mNum.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH / 40);
+			mDeparment.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH / 45);
+			mStatus.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH / 45);
 		}
-    	mNum.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH/40);
-    	mDeparment.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH/45);
-    	mStatus.setTextSize(TypedValue.COMPLEX_UNIT_PX, Common.SCREENWIDTH/45);
-        
+
 		return v;
 	}
 
