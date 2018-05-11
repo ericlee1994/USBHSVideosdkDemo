@@ -6,7 +6,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,7 +15,6 @@ import com.shgbit.android.heysharevideo.activity.HSVideoSDK;
 import com.shgbit.android.heysharevideo.callback.HSSDKInstantListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
-import com.shgbit.android.heysharevideo.json.InvitedMeeting;
 import com.shgbit.android.heysharevideo.json.Meeting;
 import com.shgbit.android.heysharevideo.json.User;
 
@@ -38,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        checkPermission();
         button = findViewById(R.id.btn_intent);
 
         btn_reserve = findViewById(R.id.btn_reserve);
@@ -53,11 +51,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null) {
-                        meetingNumber = "910063229078";
+                        meetingNumber = "910058905918";
                     } else {
                         meetingNumber = editText.getText().toString();
                     }
-                    HSVideoSDK.getInstance().startMeeting(meetingNumber, "603918", "abc", "");
+                    HSVideoSDK.getInstance().startMeeting(meetingNumber, "603918", "abc", "00010");
                 } else {
                     meetingNumber = editText.getText().toString();
                 }
@@ -80,18 +78,22 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btn_instant.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HSVideoSDK.getInstance().startInstantMeeting(userName, inviteUsers, "0001", new HSSDKInstantListener() {
-                    @Override
-                    public void onCreateMeetng(boolean result, String error) {
+               @Override
+               public void onClick(View v) {
+                   HSVideoSDK.getInstance().startInstantMeeting(userName, inviteUsers, "0001", true, new HSSDKInstantListener() {
+                       @Override
+                       public void onCreateMeetng(boolean b, String s, Meeting meeting) {
 
-                    }
-                });
-            }
-        });
+                       }
+                   });
+               }
+           });
 
-        // http://121.43.162.79:4005"
+
+
+
+
+        // http://121.43.162.79:4005"zhin
         // http://www.shgbitcloud.com:4000
         HSVideoSDK.getInstance().setSDKListener(new HSSDKListener() {
             @Override

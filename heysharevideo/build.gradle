@@ -25,6 +25,8 @@ android {
         }
     }
 
+    resourcePrefix "moudle_prefix"
+
     repositories {
         flatDir {
             dirs 'libs'

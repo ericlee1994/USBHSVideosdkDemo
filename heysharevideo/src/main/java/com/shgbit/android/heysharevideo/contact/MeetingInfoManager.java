@@ -636,9 +636,11 @@ public class MeetingInfoManager {
 				int index = isMemberInList(result, n);
 				if (index == -1) {
 					if (n.getDisplayName() == null || n.getDisplayName().isEmpty()) {
-						n.setDisplayName(getDisplayName(n.getRemoteName()));
-//						String name = StructureDataCollector.getInstance().transformName(n.getRemoteName());
-//						n.setDisplayName(name);
+						if (n.getSessionType().equals(SESSIONTYPE.UNKNOW)){
+							n.setDisplayName(n.getRemoteName());
+						} else {
+							n.setDisplayName(getDisplayName(n.getRemoteName()));
+						}
 					}
 					n.setStatus(changeToStatus("joined"));
 					result.add(n);

@@ -82,6 +82,7 @@ public class HSVideoSDK {
     private boolean isVideo = true;
     private boolean enterMeeting = true;
     private boolean isInvite = false;
+    private boolean isAudioMode = false;
 
     private HSVideoSDK() {
     }
@@ -203,6 +204,7 @@ public class HSVideoSDK {
         intent.putExtra("videoRecord", isVideoRecord);
         intent.putExtra("isMic", !isMic);
         intent.putExtra("isVideo", !isVideo);
+        intent.putExtra("isAudioMode", isAudioMode);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
 
@@ -345,8 +347,8 @@ public class HSVideoSDK {
 
     }
 
-    public void getContactJson(){
-        ServerInteractManager.getInstance().getContactResult();
+    public String getContactJson(){
+        return  ServerInteractManager.getInstance().getContactResult();
     }
 
     private void parseSettingNum(String settingNum) {
@@ -379,6 +381,12 @@ public class HSVideoSDK {
                         isVideo = false;
                     }else {
                         isVideo = true;
+                    }
+                }else if (i == 4) {
+                    if (simpleNums[4] == '1') {
+                        isAudioMode = true;
+                    }else {
+                        isAudioMode = false;
                     }
                 }
             }
@@ -614,7 +622,6 @@ public class HSVideoSDK {
             }
         }
     };
-
 
 
 }

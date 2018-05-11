@@ -246,6 +246,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         isVideoRecord = intentInfo.getBooleanExtra("videoRecord", false);
         muteMic = intentInfo.getBooleanExtra("isMic", true);
         muteCamera = intentInfo.getBooleanExtra("isVideo", false);
+        audioMode = intentInfo.getBooleanExtra("isAudioMode", false);
+
         GBLog.e(TAG, "isMainView:" + isMainView + ", isVideoRecord:" + isVideoRecord + ", closeMic:" + muteMic + ", closeVideo:" + muteCamera);
         Common.USERNAME = username;
         Common.PASSWORD = password;
@@ -708,7 +710,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                                     break;
                                 case CONNECTED:
                                     GBLog.i(TAG, "Nemo call has connected" + s);
-//                                    mUIHandler.sendEmptyMessage(AUDIOMODE);
+                                    mUIHandler.sendEmptyMessage(AUDIOMODE);
                                     mUIHandler.removeMessages(CALL_NEMO_ERROR);
                                     if (muteMic == true) {
                                         mUIHandler.sendEmptyMessage(CLOSEMIC);
