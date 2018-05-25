@@ -6,7 +6,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,8 +15,9 @@ import com.shgbit.android.heysharevideo.activity.HSVideoSDK;
 import com.shgbit.android.heysharevideo.callback.HSSDKInstantListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKListener;
 import com.shgbit.android.heysharevideo.callback.HSSDKReserveListener;
-import com.shgbit.android.heysharevideo.json.InvitedMeeting;
 import com.shgbit.android.heysharevideo.json.Meeting;
+import com.shgbit.android.heysharevideo.json.User;
+import com.shgbit.android.heysharevideo.util.GBLog;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        checkPermission();
         button = findViewById(R.id.btn_intent);
 
         btn_reserve = findViewById(R.id.btn_reserve);
@@ -52,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null) {
-                        meetingNumber = "910052852875";
+                        meetingNumber = "910043523258";
                     } else {
                         meetingNumber = editText.getText().toString();
                     }
-                    HSVideoSDK.getInstance().startMeeting(meetingNumber, "603918", "abc", "");
+                    HSVideoSDK.getInstance().startMeeting(meetingNumber, "603918", "abc", "00010");
                 } else {
                     meetingNumber = editText.getText().toString();
                 }
@@ -79,42 +79,42 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btn_instant.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HSVideoSDK.getInstance().startInstantMeeting(userName, inviteUsers, "0001", new HSSDKInstantListener() {
-                    @Override
-                    public void onCreateMeetng(boolean result, String error) {
+               @Override
+               public void onClick(View v) {
+                   HSVideoSDK.getInstance().startInstantMeeting(userName, inviteUsers, "00010", true, new HSSDKInstantListener() {
+                       @Override
+                       public void onCreateMeetng(boolean b, String s, Meeting meeting) {
 
-                    }
-                });
+                       }
+                   });
+               }
+           });
+
+
+
+
+
+        // http://121.43.162.79:4005"zhin
+        // http://www.shgbitcloud.com:4000
+        HSVideoSDK.getInstance().setSDKListener(new HSSDKListener() {
+            @Override
+            public void initState(boolean state) {
+                GBLog.e(TAG, "initState");
+                isInit = state;
+                HSVideoSDK.getInstance().connect("lizheng", "123456");
+            }
+
+            @Override
+            public void connectState(boolean state, User user) {
+
+            }
+
+            @Override
+            public void disconnectState(boolean state, String info) {
+
             }
         });
-
-        // http://121.43.162.79:4005"
-        // http://www.shgbitcloud.com:4000
-        HSVideoSDK.getInstance().init("http://www.shgbitcloud.com:4005", "lizheng", this,
-                new HSSDKListener() {
-                    @Override
-                    public void initState(boolean b) {
-                        HSVideoSDK.getInstance().connect("lizheng", "123456");
-                        Log.e(TAG, "initState:" + b);
-                    }
-
-                    @Override
-                    public void connectState(boolean b) {
-                        isInit = b;
-                    }
-
-                    @Override
-                    public void disconnectState(boolean b) {
-                        Log.e(TAG, "disconnectState:" + b);
-                    }
-
-                    @Override
-                    public void inviteMeeting(InvitedMeeting invitedMeeting) {
-
-                    }
-                });
+//        HSVideoSDK.getInstance().init("http://www.shgbitcloud.com:4005", this);
     }
     @Override
     protected void onDestroy() {

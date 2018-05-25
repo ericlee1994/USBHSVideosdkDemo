@@ -734,7 +734,7 @@ public class PopupView extends LinearLayout implements IVideoRecordCallBack {
         if (mCtrlListJoinAdapter == null) {
             mCtrlListJoinAdapter = new CtrlListJoinAdapter(mContext, mJoinUser, mScreenList, mOtherList,isHost);
             mJoinCtrlList.setAdapter(mCtrlListJoinAdapter);
-            mCtrlListJoinAdapter.setiCtrlBtnCallBack(iCtrlBtnCallBack);
+//            mCtrlListJoinAdapter.setiCtrlBtnCallBack(iCtrlBtnCallBack);
 
         } else {
             mCtrlListJoinAdapter.update(mJoinUser, mScreenList, mOtherList,isHost);
@@ -1090,13 +1090,6 @@ public class PopupView extends LinearLayout implements IVideoRecordCallBack {
             mSharePicPopView.showAtLocation(mImageSharepic,Gravity.LEFT|Gravity.TOP,x,y);
         }
     }
-
-    public ICtrlBtnCallBack iCtrlBtnCallBack = new ICtrlBtnCallBack() {
-        @Override
-        public void mqttMsg(String Object, String Operation, MemberInfo memberInfo) {
-            ((IPopViewCallBack) getContext()).onMqttMsg(Object, Operation, memberInfo);
-        }
-    };
 
 }
 

@@ -88,7 +88,7 @@ public class PersonalMeetingFragment extends Fragment {
 				CancelInviteInfo cl = new CancelInviteInfo();
 				cl.setMeetingId(meeting.getMeetingId());
 				cl.setInvitedUser(mPerson.getUserName());
-				ServerInteractManager.getInstance().cancleMeeting(cl);
+				ServerInteractManager.getInstance().cancelMeeting(cl);
 				QuiteMeetingInfo qmInfo = new QuiteMeetingInfo();
 				qmInfo.setMeetingId(meeting.getMeetingId());
 				ServerInteractManager.getInstance().quiteMeeting(qmInfo);

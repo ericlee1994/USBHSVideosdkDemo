@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -58,6 +57,7 @@ import com.shgbit.android.heysharevideo.bean.SESSIONTYPE;
 import com.shgbit.android.heysharevideo.bean.STATUS;
 import com.shgbit.android.heysharevideo.bean.StatisticsInfo;
 import com.shgbit.android.heysharevideo.bean.VI;
+import com.shgbit.android.heysharevideo.callback.HSSDKContactListener;
 import com.shgbit.android.heysharevideo.callback.IModeCallBack;
 import com.shgbit.android.heysharevideo.callback.IPhoneCallback;
 import com.shgbit.android.heysharevideo.callback.IPopViewCallBack;
@@ -161,6 +161,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private static final int MSG_BTN_VOICE_MODE_UNCHANGED = 0x500;
 
     private static String[] TRACKS;
+    public static HSSDKContactListener hssdkContactListener;
 
     private boolean foregroundCamera = true;
     private boolean muteCamera = false;
@@ -234,6 +235,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         requestCtrl = new RequestCtrl(this);
 
         mContext = this;
+        GBLog.e(TAG, "" + mContext.toString());
 
         Intent intentInfo = getIntent();
         final String number = intentInfo.getStringExtra("number");
@@ -244,6 +246,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         isVideoRecord = intentInfo.getBooleanExtra("videoRecord", false);
         muteMic = intentInfo.getBooleanExtra("isMic", true);
         muteCamera = intentInfo.getBooleanExtra("isVideo", false);
+        audioMode = intentInfo.getBooleanExtra("isAudioMode", false);
+
         GBLog.e(TAG, "isMainView:" + isMainView + ", isVideoRecord:" + isVideoRecord + ", closeMic:" + muteMic + ", closeVideo:" + muteCamera);
         Common.USERNAME = username;
         Common.PASSWORD = password;
@@ -302,6 +306,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 //        requestCtrl.setiCtrlCallBack(ictrlCallback);
         syntony = new Syntony();
         syntony.init(this, R.id.video_fragment,R.id.llyt_button2, Common.USERNAME);
+        hssdkContactListener = HSVideoSDK.getInstance().getHssdkContactListener();
 
         if (isMainView) {
             MainImage mi = new MainImage();
@@ -705,12 +710,12 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                                     break;
                                 case CONNECTED:
                                     GBLog.i(TAG, "Nemo call has connected" + s);
-//                                    mUIHandler.sendEmptyMessage(AUDIOMODE);
+                                    mUIHandler.sendEmptyMessage(AUDIOMODE);
                                     mUIHandler.removeMessages(CALL_NEMO_ERROR);
                                     if (muteMic == true) {
                                         mUIHandler.sendEmptyMessage(CLOSEMIC);
                                     }
-                                    if (muteCamera == true) {
+                                    if (muteCamera == true && audioMode == false) {
                                         mUIHandler.sendEmptyMessage(ClOSEVIDEO);
                                     }
 
@@ -1227,7 +1232,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                         activity.showDialog(msg.obj, VCDialog.DialogType.Normal);
                         break;
                     case DIALOGINVITED:
-                        Meeting invitedMeeting = (Meeting) msg.obj;
+                        InvitedMeeting invitedMeeting = (InvitedMeeting) msg.obj;
                         activity.showDialog(invitedMeeting, VCDialog.DialogType.Invite);
                         break;
                     case CLOSEMIC:
@@ -1632,7 +1637,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                             cancelInviteInfo.setMeetingId(mRecallMeeting.getId());
                             cancelInviteInfo.setSessionType(Common.SessionType);
                             cancelInviteInfo.setInvitedUser(mUnjoinedList.get(i).getId());
-                            ServerInteractManager.getInstance().cancleMeeting(cancelInviteInfo);
+                            ServerInteractManager.getInstance().cancelMeeting(cancelInviteInfo);
                             GBLog.i(TAG, "SIM:cancel invite:" + mUnjoinedList.get(i).getId());
                         }
                     }
@@ -1647,7 +1652,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private void reCall() {
         try {
 
-            MeetingInfoManager.getInstance().init();
+            MeetingInfoManager.getInstance().reset();
 
             mExitState = DISCONNECT_STATE.NORMAL;
 
@@ -1664,6 +1669,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                 }
                 nemoSDK.loginExternalAccount(Common.USERNAME, Common.USERNAME, mConnectNemoCallback);
             } else {
+                GBLog.e(TAG, "recall make call");
                 makeCall();
             }
         } catch (Exception e) {
@@ -1691,14 +1697,23 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     final String BTN_OPEN_PIC = "btn_openpic";
     final String BTN_PIZHU = "btn_pizhu";
 
+
     private void clickMenuBtn(String type) {
         if (BTN_SHOW_PERSON.equals(type)) {
             mUIHandler.removeMessages(HIDE_HIDE_LAYOUY);
         } else {
             if (BTN_ADD_PERSON.equals(type)) {
                 GBLog.i(TAG, "[user operation]click add person");
-                syntony.startAddressList(true, "horizontal", false, null, null);
-                syntony.setExCallBack(videoCallBack);
+                if (hssdkContactListener != null) {
+                    boolean flag = hssdkContactListener.contact(mContext, R.id.video_fragment);
+                    if (!flag){
+                        syntony.startAddressList(true, "horizontal", false, null, null);
+                        syntony.setExCallBack(videoCallBack);
+                    }
+                }else {
+                    syntony.startAddressList(true, "horizontal", false, null, null);
+                    syntony.setExCallBack(videoCallBack);
+                }
             } else if (BTN_BAN_MIC.equals(type)) {
                 GBLog.e(TAG, "[user operation]click muteMic btn:" + muteMic);
                 mUIHandler.sendEmptyMessage(MSG_BTN_SWITCH_MIC);
@@ -1836,7 +1851,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             CancelInviteInfo cl = new CancelInviteInfo();
             cl.setMeetingId(VideoActivity.mRecallMeeting.getId());
             cl.setInvitedUser(users[0]);
-            ServerInteractManager.getInstance().cancleMeeting(cl);
+            ServerInteractManager.getInstance().cancelMeeting(cl);
         }
     }
 
@@ -2320,11 +2335,6 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     }
 
     @Override
-    public void onClickMenuBtn(String type, boolean recordFlag) {
-
-    }
-
-    @Override
     public void onClickPerson(MemberInfo memberInfo) {
         if (memberInfo.getStatus().equals(STATUS.JOINED)) {
             MeetingInfoManager.getInstance().PopUpDown(memberInfo);
@@ -2335,8 +2345,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         }
     }
 
-    @Override
-    public void onMqttMsg(String Object, String Operation, MemberInfo memberInfo) {
+//    @Override
+//    public void onMqttMsg(String Object, String Operation, MemberInfo memberInfo) {
 //        if(memberInfo.isLocal()){
 //            if (Object.equals("Microphone")){
 //                mUIHandler.sendEmptyMessage(MSG_BTN_SWITCH_MIC);
@@ -2365,7 +2375,8 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 //            GBLog.e(TAG, "click ctrl btn:" + json);
 //            MQTTClient.getInstance().publishMsg(TOPIC.CTRL_OPERATE + mRecallMeeting.getId(), json);
 //        }
-    }
+//    }
+
 
     @Override
     public void setMicState(boolean isMicMute) {

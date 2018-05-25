@@ -91,6 +91,9 @@ public class StructureDataCollector {
 		@Override
 		public void onAddressChanged(Organization[] organizations, UserInfo[] userInfos) {
 			setaddressData(organizations, userInfos);
+			if (mListener != null) {
+				mListener.onDataUpdate();
+			}
 		}
 
 		@Override

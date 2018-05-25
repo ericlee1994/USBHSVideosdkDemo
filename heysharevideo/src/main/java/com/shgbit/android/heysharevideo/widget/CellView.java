@@ -494,47 +494,7 @@ public class CellView extends FrameLayout {
 
 
     private void setBackgroundImg() {
-        if (display_mode.equals(DISPLAY_MODE.NOT_FULL_FOUR)) {
-            switch (mPosition) {
-                case 0:
-                    mImgBG.setImageResource(R.drawable.bg_big1_1);
-                    break;
-                case 1:
-                    mImgBG.setImageResource(R.drawable.bg_small1_1);
-                    break;
-                case 2:
-                    mImgBG.setImageResource(R.drawable.bg_small2_1);
-                    break;
-                case 3:
-                    mImgBG.setImageResource(R.drawable.bg_small3_1);
-                    break;
-                default:
-                    break;
-            }
-        }else if (display_mode.equals(DISPLAY_MODE.NOT_FULL_SIX)) {
-            switch (mPosition) {
-                case 0:
-                    mImgBG.setImageResource(R.drawable.bg_six0);
-                    break;
-                case 1:
-                    mImgBG.setImageResource(R.drawable.bg_six1);
-                    break;
-                case 2:
-                    mImgBG.setImageResource(R.drawable.bg_six2);
-                    break;
-                case 3:
-                    mImgBG.setImageResource(R.drawable.bg_six3);
-                    break;
-                case 4:
-                    mImgBG.setImageResource(R.drawable.bg_six4);
-                    break;
-                case 5:
-                    mImgBG.setImageResource(R.drawable.bg_six5);
-                    break;
-                default:
-                    break;
-            }
-        }else if (display_mode.equals(DISPLAY_MODE.NOT_FULL_ONEFIVE)) {
+        if (display_mode.equals(DISPLAY_MODE.NOT_FULL_ONEFIVE)) {
             switch (mPosition) {
                 case 0:
                     mImgBG.setImageResource(R.drawable.bg_big_one);
@@ -643,8 +603,8 @@ public class CellView extends FrameLayout {
                 CancelInviteInfo cl = new CancelInviteInfo();
                 cl.setMeetingId(VideoActivity.mRecallMeeting.getId());
                 cl.setInvitedUser(vi.getRemoteName());
-//                VideoActivity.vcApplication.getInteractManager().cancleMeeting(cl);
-                ServerInteractManager.getInstance().cancleMeeting(cl);
+//                VideoActivity.vcApplication.getInteractManager().cancelMeeting(cl);
+                ServerInteractManager.getInstance().cancelMeeting(cl);
             }else if (id == R.id.img_inviteagain_status1) {
                 GBLog.i(TAG, "btn_invite_again");
                 if (vi != null) {
@@ -706,7 +666,7 @@ public class CellView extends FrameLayout {
 //                    cl.setMeetingId(VideoActivity.mRecallMeeting.getId());
 //                    cl.setSessionId(Common.SESSIONID);
 //                    cl.setInvitedUser(vi.getRemoteName());
-//                    VideoActivity.vcApplication.getInteractManager().cancleMeeting(cl);
+//                    VideoActivity.vcApplication.getInteractManager().cancelMeeting(cl);
 //                    break;
 //                case R.id.img_inviteagain_status1:
 //                    GBLog.i(TAG, "btn_invite_again");

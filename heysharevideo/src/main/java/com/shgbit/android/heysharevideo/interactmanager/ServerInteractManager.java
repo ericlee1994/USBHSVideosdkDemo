@@ -103,6 +103,7 @@ public class ServerInteractManager {
 	private InvitedMeeting mInvitedMeeting;
 
 	public static ServerInteractManager instance;
+	public String contactResult = "";
 
 
 	private ArrayList<ServerConfigCallback> mConfigCallbacks = new ArrayList<>();
@@ -209,15 +210,9 @@ public class ServerInteractManager {
 		return instance;
 	}
 
-	public void init (String serviceurl, String userName, Context context) {
-		if (serviceurl == null || userName == null) {
-			return;
-		}
-
+	public void init (String serviceurl, Context context) {
 		mServiceUrl = serviceurl;
-		mUserName = userName;
 		mContext = context;
-		StructureDataCollector.getInstance().init(mUserName, mContext);
 	}
 	@Override
 	public void finalize () {
@@ -292,6 +287,8 @@ public class ServerInteractManager {
 		if (li == null) {
 			return;
 		}
+
+		mUserName = li.getUserName();
 
 		String url = mServiceUrl + "/login";
 		String data = getsecritString(li, SecretKey);
@@ -520,7 +517,7 @@ public class ServerInteractManager {
 		return  httpGet(url);
 	}
 	
-	public void cancleMeeting (CancelInviteInfo cii) {
+	public void cancelMeeting(CancelInviteInfo cii) {
 		if (cii != null) {
 			cii.setSessionType(SessionType);
 			cii.setSessionId(mSessionId);
@@ -646,6 +643,10 @@ public class ServerInteractManager {
 	public static String getTimeStr2(long time) {
 		SimpleDateFormat sTimeSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.CHINA);
 		return sTimeSDF.format(time);
+	}
+
+	public String getContactResult(){
+		return contactResult;
 	}
 	
 	private class HeartBeatThread extends Thread {
@@ -849,6 +850,7 @@ public class ServerInteractManager {
 						}
 
 						mSessionId = lr.getSessionId();
+						StructureDataCollector.getInstance().init(lr.getUser().getUserName(), mContext);
 						getContacts();
 						startHeartBeat();
 					}
@@ -1605,6 +1607,7 @@ public class ServerInteractManager {
 					break;
 				case CONTACTS:
 					Contacts contacts = null;
+					contactResult = result;
 					try {
 						contacts = new Gson().fromJson(result, Contacts.class);
 					} catch (Throwable e) {

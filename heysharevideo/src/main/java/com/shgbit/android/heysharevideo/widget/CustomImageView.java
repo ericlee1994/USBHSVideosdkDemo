@@ -102,7 +102,7 @@ public class CustomImageView extends View {
             mBitmap8 = BitmapFactory.decodeResource(getResources(), R.drawable.time_num_8);
             mBitmap9 = BitmapFactory.decodeResource(getResources(), R.drawable.time_num_9);
         } catch (Throwable e){
-            GBLog.e(TAG, "init Bitmap Throwable " + e.toString());
+            GBLog.e(TAG, "reset Bitmap Throwable " + e.toString());
         }
 
 //        startTime(10);

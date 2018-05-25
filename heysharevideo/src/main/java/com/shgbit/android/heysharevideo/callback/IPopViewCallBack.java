@@ -10,7 +10,5 @@ import com.shgbit.android.heysharevideo.bean.MemberInfo;
 public interface IPopViewCallBack {
     void onClickPopBtn();
     void onClickMenuBtn(String type);
-    void onClickMenuBtn(String type, boolean recordFlag);
     void onClickPerson(MemberInfo memberInfo);
-    void onMqttMsg(String Object, String Operation, MemberInfo memberInfo);
 }

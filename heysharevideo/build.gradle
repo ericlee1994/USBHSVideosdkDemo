@@ -25,6 +25,8 @@ android {
         }
     }
 
+    resourcePrefix "moudle_prefix"
+
     repositories {
         flatDir {
             dirs 'libs'
@@ -46,7 +48,6 @@ dependencies {
     implementation(name: 'libuvccamera-release', ext: 'aar')
     //    implementation("com.serenegiant:common:1.5.20"){}
     //    implementation files('libs/serenegiant.jar')
-    compileOnly files('libs/camera.jar')
     implementation files('libs/xylink-android-sdk-2.20.1.jar')
 }
 
