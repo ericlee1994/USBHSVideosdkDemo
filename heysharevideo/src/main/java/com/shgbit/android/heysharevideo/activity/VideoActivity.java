@@ -2378,6 +2378,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 //    }
 
 
+
     @Override
     public void setMicState(boolean isMicMute) {
         //isMicMute为true静音，关视频
