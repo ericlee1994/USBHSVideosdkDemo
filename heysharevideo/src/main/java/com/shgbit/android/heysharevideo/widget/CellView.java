@@ -382,7 +382,6 @@ public class CellView extends FrameLayout {
             }
 
         } else {
-
             if ((display_mode.equals(DISPLAY_MODE.FULL_PIP) || display_mode.equals(DISPLAY_MODE.FULL_PIP_SIX)
                     || display_mode.equals(DISPLAY_MODE.FULL))
                     && mPosition == 0) {
@@ -396,6 +395,9 @@ public class CellView extends FrameLayout {
             mTxtName.setVisibility(VISIBLE);
             if (vi.getDisplayName() != null || !vi.getDisplayName().isEmpty()) {
                 mTxtName.setText("  " + vi.getDisplayName() + "  ");
+                GBLog.i(TAG, "getDisplayName =" + vi.getDisplayName());
+            }else {
+                GBLog.e(TAG, "getDisplayName == null");
             }
 
             if (((display_mode.equals(DISPLAY_MODE.FULL_PIP) || display_mode.equals(DISPLAY_MODE.FULL)

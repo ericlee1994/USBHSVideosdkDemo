@@ -52,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (isInit) {
                     if (editText.getText().toString().equals("") || editText.getText().toString() == null) {
-                        meetingNumber = "910043523258";
+                        meetingNumber = "910093939526";
                     } else {
                         meetingNumber = editText.getText().toString();
                     }
-                    HSVideoSDK.getInstance().startMeeting(meetingNumber, "603918", "abc", "00010");
+                    HSVideoSDK.getInstance().startMeeting(meetingNumber, "603918", "这里写会议名称", "","00010");
                 } else {
                     meetingNumber = editText.getText().toString();
                 }
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        // http://121.43.162.79:4005"zhin
+        // http://121.43.162.79:4005"
         // http://www.shgbitcloud.com:4000
         HSVideoSDK.getInstance().setSDKListener(new HSSDKListener() {
             @Override

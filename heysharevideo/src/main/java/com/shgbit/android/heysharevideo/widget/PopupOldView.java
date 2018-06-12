@@ -86,6 +86,7 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
     private boolean ModeStatus;
     private boolean VoiceMode;
     private boolean isRecording = false;
+    private boolean isShowRecord;
     private String meetingId = "";
     private boolean mIsShow = false;
     private Timer mTimer;
@@ -93,12 +94,13 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
     private PopupWindow mCtrlPopView;
     private PopupWindow mSharePicPopView;
 
-    public PopupOldView (Context context, boolean micstatus, boolean videostatus ,boolean isvoicemode) {
+    public PopupOldView (Context context, boolean micstatus, boolean videostatus ,boolean isvoicemode, boolean isShowRecord) {
         super(context);
         mContext = context;
         MicStatus = micstatus;
         ModeStatus = videostatus;
         VoiceMode = isvoicemode;
+        this.isShowRecord = isShowRecord;
         init(context);
     }
 
@@ -596,7 +598,7 @@ public class PopupOldView extends LinearLayout implements IVideoRecordCallBack {
             super.handleMessage(msg);
             switch (msg.what) {
             case MESSAGE_1:
-                if (mIsShow) {
+                if (mIsShow && isShowRecord) {
                     mVideotapeLayout.setVisibility(VISIBLE);
                     if (((String)msg.obj).equalsIgnoreCase("starting")) {
                         isRecording = true;

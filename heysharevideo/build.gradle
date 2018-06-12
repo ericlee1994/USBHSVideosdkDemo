@@ -37,7 +37,7 @@ android {
 
 dependencies {
     compileOnly fileTree(include: ['*.jar'], dir: 'libs')
-    provided 'com.android.support:appcompat-v7:26.1.0'
+    compileOnly 'com.android.support:appcompat-v7:26.1.0'
     compileOnly 'io.reactivex.rxjava2:rxjava:2.1.2'
     compileOnly 'io.reactivex.rxjava2:rxandroid:2.0.1'
     compileOnly 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.1.0'
@@ -45,9 +45,10 @@ dependencies {
     //    implementation files('libs/joda-time-2.9.9.jar')
     implementation 'joda-time:joda-time:2.9.9'
     //    implementation files('libs/xylink-android-sdk-2.20.1.jar')
-    implementation(name: 'libuvccamera-release', ext: 'aar')
-    //    implementation("com.serenegiant:common:1.5.20"){}
+    implementation (name: 'libuvccamera', ext: 'aar')
+//        implementation("com.serenegiant:common:1.5.20"){}
     //    implementation files('libs/serenegiant.jar')
+    compileOnly files('libs/camera.jar')
     implementation files('libs/xylink-android-sdk-2.20.1.jar')
 }
 

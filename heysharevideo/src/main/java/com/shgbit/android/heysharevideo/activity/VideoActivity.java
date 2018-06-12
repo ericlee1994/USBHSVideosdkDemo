@@ -181,6 +181,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private boolean hasEndMqtt = false;
     private boolean isVideoRecord = false;
     private boolean isMainView = false;
+    private boolean isShowRecord = true;
 
     private ArrayList<MemberInfo> mScreenList;
     private ArrayList<MemberInfo> mOtherList;
@@ -190,6 +191,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
     private String mHangupwarn;
     private String curResource;
     private String clientId = Common.USERNAME + "?t_mobile";
+    private String numberInfo;
     private int memberSum;
     private int joinSum;
 
@@ -242,11 +244,14 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
         String password = intentInfo.getStringExtra("password");
         String meetingName = intentInfo.getStringExtra("meetingName");
         String username = intentInfo.getStringExtra("username");
+        numberInfo = intentInfo.getStringExtra("numberInfo");
         isMainView = intentInfo.getBooleanExtra("mainView", false);
         isVideoRecord = intentInfo.getBooleanExtra("videoRecord", false);
         muteMic = intentInfo.getBooleanExtra("isMic", true);
         muteCamera = intentInfo.getBooleanExtra("isVideo", false);
         audioMode = intentInfo.getBooleanExtra("isAudioMode", false);
+        isShowRecord = intentInfo.getBooleanExtra("isShowRecord", true);
+
 
         GBLog.e(TAG, "isMainView:" + isMainView + ", isVideoRecord:" + isVideoRecord + ", closeMic:" + muteMic + ", closeVideo:" + muteCamera);
         Common.USERNAME = username;
@@ -1495,7 +1500,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
                 || displayMode.equals(DISPLAY_MODE.NOT_FULL_QUARTER)) {
             mTopLayout = new TitleLayout(this);
             mBottomLayout = new LinearLayout(this);
-            popupView = new PopupOldView(this, muteMic, muteCamera, audioMode);
+            popupView = new PopupOldView(this, muteMic, muteCamera, audioMode, isShowRecord);
             videoView = new MyVideoVIew(this, displayMode);
 
 
@@ -1538,7 +1543,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
             mWholeLayout.addView(videoView);
         } else if (displayMode.equals(DISPLAY_MODE.FULL_PIP_SIX)) {
             videoView = new MyVideoVIew(this, displayMode);
-            popupView = new PopupOldView(this, muteMic, muteCamera, audioMode);
+            popupView = new PopupOldView(this, muteMic, muteCamera, audioMode, isShowRecord);
             mBottomLayout = new LinearLayout(this);
             dismissPopup();
             videoView.setiVideoViewCallBack(mVideoViewListener);
@@ -1656,7 +1661,7 @@ public class VideoActivity extends BaseActivity implements IPopViewCallBack, IPh
 
             mExitState = DISCONNECT_STATE.NORMAL;
 
-            mTopLayout.setmConferenceIDTxt(mRecallMeeting.getId());
+            mTopLayout.setmConferenceIDTxt(numberInfo);
             videoView.closeLocalView(false);
 
             if (!Common.isNemoConnected) {

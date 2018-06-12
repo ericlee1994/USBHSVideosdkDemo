@@ -151,7 +151,7 @@ public class TitleLayout extends LinearLayout {
 
 
     public void setmTitleTxt (String titleTxt, String numTxt) {
-        mTitleTxt.setText(getResources().getString(R.string.meeting_name) + titleTxt + "(" + numTxt + ")");
+        mTitleTxt.setText(titleTxt + "(" + numTxt + ")");
     }
 
     public void setmMemberNumTxt (String numTxt) {
@@ -159,7 +159,7 @@ public class TitleLayout extends LinearLayout {
     }
 
     public void setmConferenceIDTxt (String conferenceIDTxt) {
-        mConferenceIDTxt.setText(getResources().getString(R.string.conference_id) + conferenceIDTxt);
+        mConferenceIDTxt.setText(conferenceIDTxt);
     }
 
     public void setmClockView (int time) {

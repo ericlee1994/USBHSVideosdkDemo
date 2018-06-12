@@ -78,6 +78,7 @@ public class HSVideoSDK {
     private boolean hasLogin = false;
     private boolean isMainView = false;
     private boolean isVideoRecord = false;
+    private boolean isShowRecord = true;
     private boolean isMic = false;
     private boolean isVideo = true;
     private boolean enterMeeting = true;
@@ -195,27 +196,33 @@ public class HSVideoSDK {
         ServerInteractManager.getInstance().logout();
     }
 
-    public void startMeeting(String meetingNumber, String meetingPwd, String meetingName, String settingNum) {
+    public void startMeeting(String meetingNumber, String meetingPwd, String title, String subTitle, String settingNum) {
         GBLog.i(TAG, "startMeeting");
         this.settingNum = settingNum;
         this.meetingId = meetingNumber;
         parseSettingNum(settingNum);
 
-        if (meetingName == null || meetingName.equals("")) {
-            meetingName = "默认会议";
+        if (title == null || title.equals("")) {
+            title = "会议名称：默认会议";
+        }
+
+        if (subTitle == null || subTitle.equals("")) {
+            subTitle = "会议号：" + meetingNumber;
         }
 
         Intent intent = new Intent(mContext, VideoActivity.class);
 
         intent.putExtra("username", userName);
         intent.putExtra("password", meetingPwd);
-        intent.putExtra("meetingName", meetingName);
+        intent.putExtra("meetingName", title);
         intent.putExtra("number", meetingNumber);
+        intent.putExtra("numberInfo", subTitle);
         intent.putExtra("mainView", isMainView);
         intent.putExtra("videoRecord", isVideoRecord);
         intent.putExtra("isMic", !isMic);
         intent.putExtra("isVideo", !isVideo);
         intent.putExtra("isAudioMode", isAudioMode);
+        intent.putExtra("isShowRecord", isShowRecord);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
 
@@ -397,8 +404,12 @@ public class HSVideoSDK {
                 }else if (i == 1) {
                     if (simpleNums[1] == '1'){
                         isVideoRecord = true;
-                    }else {
+                    }else if (simpleNums[1] == '9'){
                         isVideoRecord = false;
+                        isShowRecord = false;
+                    }else if (simpleNums[1] == '0'){
+                        isVideoRecord = false;
+                        isShowRecord = true;
                     }
                 }else if (i == 2) {
                     if (simpleNums[2] == '1') {
@@ -514,12 +525,12 @@ public class HSVideoSDK {
 
         @Override
         public void onCreateMeeting(boolean result, String error, Meeting meeting) {
-
+            GBLog.i(TAG, "onCreateMeeting:" + result + error);
             if (hssdkInstantListener != null) {
                 hssdkInstantListener.onCreateMeetng(result, error, meeting);
 
                 if (result && hasInstantMeeting && enterMeeting) {
-                    startMeeting(meeting.getMeetingId(), meeting.getPassword(), "即时会议", settingNum);
+                    startMeeting(meeting.getMeetingId(), meeting.getPassword(), "会议名称：即时会议", "", settingNum);
                 } else {
                     GBLog.e(TAG, "onCreateMeeting: false," + error);
                 }

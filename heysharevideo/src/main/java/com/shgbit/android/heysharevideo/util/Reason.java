@@ -75,7 +75,7 @@ public class Reason {
         }else if (s.equals("SERVICE_REACH_MAX_COUNT")){
             return format("当前在线呼叫数已达服务上限", s);
         }
-        return "呼叫失败，请稍后重试";
+        return "n:视频断开连接，请稍后重试";
     }
 
     private static String format(String zh, String en){
